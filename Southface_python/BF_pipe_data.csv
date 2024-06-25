@@ -1,0 +1,7 @@
+﻿ID,Description,Location,Material,Diameter_inner_in,Diameter_outer_in,Length_ft,Surface_Temp
+1,Flex Pipe (Small),IDK,Galvanized Steel,5.5,6,1,394
+2,Flex Pipe (Medium),IDK,Galvanized Steel,7.25,8,1.5,461
+3,Flex Pipe (Large),IDK,Galvanized Steel,11,12,2,452
+4,Pipe (Damaged Insulation),IDK,Galvanized Steel,9.5,10,70,457
+5,Flanges (Terminated),IDK,Galvanized Steel,7.25,8,1,180
+6,Valve + Flanges,IDK,Galvanized Steel,7.25,8,1.5,457
