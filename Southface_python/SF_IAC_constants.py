@@ -6,8 +6,7 @@
 
 t_A = 70 # Ambient Temperature of the Facility 
 
-uptime_factory = 8544 #Uptime of the Facility
-pipe_source = 'Gas'
+uptime_factory = 6240 #Uptime of the Facility
 boiler_efficiency = 0.8 # Standard Efficiency of a boiler (Could be updated)
 per_therm_cost = 2.33 # Price per therm for Facility
 per_kwh_cost = 0.054 # Price per KWH for Facility
