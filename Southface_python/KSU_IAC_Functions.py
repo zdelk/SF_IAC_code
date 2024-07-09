@@ -69,7 +69,8 @@ def insulation_calculator(pipe_data, k_values = k_data):
 # Calculates overall Heat Loss
 # Uses that to calculate relevant saving info
 # Also give overall cost savings
-def pipe_saving_calc(var, fuel_source = 'None'):
+def pipe_saving_calc(var, per_kw_peak_cost=0, per_kwh_cost=0, 
+                     per_MMBTU_cost=0, fuel_source = 'None'):
     type = fuel_source # Boiler could be Gas or Electric
     btu_per_hour_loss = var # Reassign for readability
     if type == 'Gas': # If boiler is Gas
@@ -146,3 +147,32 @@ def pipe_cost_n_ssp(pipe_data, savings_data):
     })
     
     return(output_table)
+
+def pipe_final(pipe_data, per_kw_peak_cost, per_kwh_cost, 
+                     per_MMBTU_cost, fuel_source):
+    # Running initial Calculator function
+    pipe_calculations = round(insulation_calculator(pipe_data), 2) # Running Data through pipe calculator from KSU_IAC_functions
+
+    # Creating list of columns for the output table
+    pipe_table_cols = ["ID", "Description", "Location", "Diameter_inner_in", "Length_ft", "Surface_Temp", "Q non", "Q in", "Q Diff"]
+
+    # Sub-setting calculations to only columns need in the output table
+    pipe_table_data = pipe_calculations[pipe_table_cols]
+
+    Q_non_total = pipe_table_data['Q non'].sum() # Total Heat Loss from Non-Insulated Pipes
+    Q_in_total = pipe_table_data['Q in'].sum() # Estimated Total Heat Loss from Insulated Pipes
+    Q_diff_total = pipe_table_data['Q Diff'].sum() # Estimated Total Difference between Non-Insulated and Insulated
+
+    # Creating Heat Savings DataFrame
+    pipe_heat_savings = pd.DataFrame({'Non-Insulated': [round(Q_non_total, 2)],
+                        'Insulated': [round(Q_in_total, 2)], 
+                        'Total Savings': [round(Q_diff_total)]})
+
+    # Energy and Cost Savings for Pipe Insulation
+    pipe_savings_data = pipe_saving_calc(Q_diff_total, per_kw_peak_cost, per_kwh_cost, 
+                     per_MMBTU_cost, fuel_source)
+
+    # Cost Analysis
+    pipe_cost_data = round(pipe_cost_n_ssp(pipe_data, pipe_savings_data), 2) 
+    
+    return pipe_cost_data, pipe_table_data, pipe_heat_savings
