@@ -14,8 +14,10 @@ output_path = 'test_output.xlsx'
 def IAC_function(input_path, output_path):
     input_workbook = pd.read_excel(input_path, engine = 'openpyxl', sheet_name = None)
     
+    # Bill anlysis should output rates for utilites
+    # Those values are then used in subsequent functions
     utility_bill = input_workbook['Utility Bills']
-    per_kwh_cost, per_kw_peak_cost = utility_analysis(utility_bill)
+    annual_bill, per_kwh_cost, per_kw_peak_cost, per_therm_cost = utility_analysis(utility_bill)
     
     bill_analysis = pd.DataFrame({
         'per_kwh_cost': [per_kwh_cost],
@@ -39,6 +41,7 @@ def IAC_function(input_path, output_path):
     pipe_heat_savings.to_excel(writer, sheet_name = 'Pipe Data', index=False, startcol=1, startrow=len3)
 
     writer.close()
+    return print('Process is complete')
 
 
 IAC_function(input_path, output_path)
