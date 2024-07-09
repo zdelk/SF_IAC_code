@@ -148,13 +148,17 @@ def pipe_cost_n_ssp(pipe_data, savings_data):
     
     return(output_table)
 
+#-----------------------------------------------------------------------------------------------------#
+#---------------------------------Final Function to Call in Processor---------------------------------#
+#-----------------------------------------------------------------------------------------------------#
 def pipe_final(pipe_data, per_kw_peak_cost, per_kwh_cost, 
                      per_MMBTU_cost, fuel_source):
     # Running initial Calculator function
     pipe_calculations = round(insulation_calculator(pipe_data), 2) # Running Data through pipe calculator from KSU_IAC_functions
 
     # Creating list of columns for the output table
-    pipe_table_cols = ["ID", "Description", "Location", "Diameter_inner_in", "Length_ft", "Surface_Temp", "Q non", "Q in", "Q Diff"]
+    pipe_table_cols = ["ID", "Description", "Location", "Diameter_inner_in", 
+                       "Length_ft", "Surface_Temp", "Q non", "Q in", "Q Diff"]
 
     # Sub-setting calculations to only columns need in the output table
     pipe_table_data = pipe_calculations[pipe_table_cols]
@@ -164,7 +168,8 @@ def pipe_final(pipe_data, per_kw_peak_cost, per_kwh_cost,
     Q_diff_total = pipe_table_data['Q Diff'].sum() # Estimated Total Difference between Non-Insulated and Insulated
 
     # Creating Heat Savings DataFrame
-    pipe_heat_savings = pd.DataFrame({'Non-Insulated': [round(Q_non_total, 2)],
+    pipe_heat_savings = pd.DataFrame({
+                        'Non-Insulated': [round(Q_non_total, 2)],
                         'Insulated': [round(Q_in_total, 2)], 
                         'Total Savings': [round(Q_diff_total)]})
 
