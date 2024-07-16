@@ -3,6 +3,7 @@
 import pandas as pd
 from utilities_analysis import utility_analysis
 from KSU_IAC_Functions import pipe_final
+from Air_Line_leaks import air_leak_calculation
 
 
 input_path = 'test_input.xlsx'
@@ -19,11 +20,14 @@ def IAC_function(input_path, output_path):
     utility_bill = input_workbook['Utility Bills']
     annual_bill, per_kwh_cost, per_kw_peak_cost, per_therm_cost = utility_analysis(utility_bill)
     
+    # Returning Cost of energy for rest of function
     bill_analysis = pd.DataFrame({
         'per_kwh_cost': [per_kwh_cost],
-        'per_kw_peak_cost': [per_kw_peak_cost]
+        'per_kw_peak_cost': [per_kw_peak_cost],
+        'per_therm_cost': [per_therm_cost]
     })
     
+    # Pipe Portion
     pipe_data = input_workbook['Pipe Data']
     pipe_cost_data, pipe_table_data, pipe_heat_savings = pipe_final(pipe_data, per_kw_peak_cost, per_kwh_cost, 
                      per_MMBTU_cost=None, fuel_source='Electric')
@@ -31,6 +35,10 @@ def IAC_function(input_path, output_path):
     len1 = 1
     len2 = len1 + len(pipe_cost_data) + 2
     len3 = len2 + len(pipe_table_data) + 2
+    # End Pipe Portion
+    #################
+    # Air Leak
+    air_leak_data = air_leak_calculation(per_kw_peak_cost, per_kwh_cost)
 
     writer = pd.ExcelWriter(output_path, engine = 'xlsxwriter')
 
