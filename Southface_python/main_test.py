@@ -9,6 +9,7 @@ from Pipe_insulation import PipeInsulation
 input_path = 'Data/test_input.xlsx'
 output_path = 'Data/test_output_3.xlsx'
 k_val_path = 'Data/K_values.csv'
+uptime_factory = 0
 
 def load_variables(constants):
     facility_dict = pd.Series(constants['FC Value'].values, index =constants['FC Var']).to_dict()
@@ -60,7 +61,7 @@ def main(input_path, output_path):
     
     # LED Replacement
     led_replacement = LEDReplacement(led_dict)
-    led_replacement.set_costs(per_kwh_cost, per_kw_peak_cost, uptime_factory)
+    led_replacement.set_costs(per_kwh_cost, per_kw_peak_cost, uptime_factory) 
     led_results = led_replacement.LED_savings()
     led_final = led_replacement.asDataFrame(led_results)
     # print(led_final)
