@@ -1,11 +1,8 @@
 import pandas as pd
 import numpy as np
 import importlib
-import SF_IAC_constants # Script holds Constants used in calculations
-importlib.reload(SF_IAC_constants) # Reload to make sure its up to date
-from SF_IAC_constants import * 
 
-k_data = pd.read_csv('K_values.csv') # CSV file that hold K values for various materials
+k_data = pd.read_csv('Data/K_values.csv') # CSV file that holds K values for various materials
 #-----------------------------------------------------------------------------------------------------#
 #----------------------------General Pipe Insulation Calculator---------------------------------------#
 #----------------------------------Itemized Heat Loss-------------------------------------------------#
