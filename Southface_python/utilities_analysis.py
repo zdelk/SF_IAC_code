@@ -19,7 +19,14 @@ class UtilityBill:
         if 'Natural Gas Usage (Therms)' in utility_bill.columns: #if gas is used, updates value
             per_therm_cost = annual_bill.loc['therm_charge'] / annual_bill.loc['therm_charge']
         
-        
-        return annual_bill, per_kwh_cost, per_kw_peak_cost, per_therm_cost
+        energy_costs = {
+            "Price per kWh ($)": per_kwh_cost,
+            "Price per Peak kW ($)": per_kw_peak_cost,
+            "Price per Therm ($)": per_therm_cost
+        }
+        return annual_bill, energy_costs
 
+    def asDataFrame(self, results):
+        df = pd.DataFrame([results])
+        return df
 

@@ -13,9 +13,9 @@ def air_leak_calculation(per_kw_peak_cost, per_kw_cost):
     A_leak = (leak_radius)**2 * np.pi
     
     w_comp = (n * R * T_1) / (E_comp * (n-1)) * (((P_line/P_atm)**(1-(1/n))) - 1)
-    m_air = C_dis * (2 / (K + 1))**(1/(K+1)) * (P_line *1000 / (R * T_2)) * A_leak * np.sqrt(K * R * T_2 * (2 / (K + 1)))
+    m_air = C_dis * (2 / (K + 1))**(1/(K+1)) * (P_line *1000 / (R * T_2)) * A_leak * np.sqrt(K * (R*1000)* T_2 * (2 / (K + 1))) # R*1000 to make units equal
     
-    power_loss = m_air * w_comp / 1000
+    power_loss = m_air * w_comp / 1000 # Convert to kW
     
     kw_reduction = power_loss * num_leaks
     

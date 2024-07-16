@@ -41,7 +41,7 @@ pipe_sf_cost = 133  # Cost of one special fitting/RIS
 n = 1.4 # isentropic constant for ideal gas
 K = 1.4 # Specific heat ratio
 P_atm = 101 # Atmospheric Pressure in kPa
-R = 287 # Air Ideal Gas Constant in j/kg*K
+R = 0.287 # Air Ideal Gas Constant in j/kg*K
 
 cost_ultrasonic = 5000 # Cost of Ultrasonic Leak Detector
 labor_rate = 30 # Personnel Labor Rate
