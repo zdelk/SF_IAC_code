@@ -15,13 +15,18 @@ import pandas as pd
 
 
 class VSDreplace:
-    def __init__(self, df):
+    def __init__(self, df, dict):
         self.data = df
-        self.const = 0.7456
+        self.set_const(dict)
 
     def read_values(self):
         self.pre_values = self.data.loc["Pre"]
         self.post_values = self.data.loc["Post"]
+    
+    def set_const(self, dict):
+        for key, value in dict.items():
+            setattr(self, key, value)
+        
 
     def VSDcalc(self):
         pre_motor_hp = self.pre_values["Motor Hp"]
@@ -78,13 +83,11 @@ class VSDreplace:
         return results
 
     def set_costs(
-        self, per_kwh_cost, per_kw_peak_cost, uptime_factory, vsd_cost, labor_cost
+        self, per_kwh_cost, per_kw_peak_cost, uptime_factory
     ):
         self.cost_peak = per_kw_peak_cost
         self.cost_kw = per_kwh_cost
         self.uptime = uptime_factory
-        self.vsd_cost = vsd_cost
-        self.labor_cost = labor_cost
 
     def asDataFrame(self, results):
         df = pd.DataFrame([results])
