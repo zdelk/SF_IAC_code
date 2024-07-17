@@ -1,6 +1,17 @@
 import pandas as pd
 import numpy as np
 
+# To Use in main():
+    # # Pipe insulation
+    # k_vals = pd.read_csv(k_val_path)
+    # pipe_sheet = input_workbook['Pipe Data']
+    # pipe_insulation = PipeInsulation(pipe_sheet, k_vals, Pipe_dict)
+    # pipe_insulation.set_costs(per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory)
+    # pipe_cost_data, pipe_table_data, pipe_heat_savings = pipe_insulation.pipe_final()
+
+    # len1 = 1
+    # len2 = len1 + len(pipe_cost_data) + 2
+    # len3 = len2 + len(pipe_table_data) + 2
 
 class PipeInsulation:
     def __init__(self, pipe_data, k_values, pipe_dict):
@@ -229,11 +240,12 @@ class PipeInsulation:
 
         return pipe_cost_data, pipe_table_data, pipe_heat_savings
 
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_MMBTU_cost, uptime_factory):
+    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_MMBTU_cost, uptime_factory, t_A):
         self.per_kwh_cost = per_kwh_cost
         self.per_peak_cost = per_kw_peak_cost
         self.per_MMBTU_cost = per_MMBTU_cost
         self.uptime = uptime_factory
+        self.t_A = t_A
 
     def asDataFrame(self, results):
         df = pd.DataFrame([results])
