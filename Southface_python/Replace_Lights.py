@@ -30,8 +30,8 @@ class LEDReplacement:
         fluor_lifespan = self.fluor_hours / self.uptime
         ballast_lifespan = self.ballast_hours / self.uptime
 
-        fluor_rep_cycles = fluor_lifespan / led_lifespan
-        ballast_rep_cycles = ballast_lifespan / led_lifespan
+        fluor_rep_cycles = led_lifespan /fluor_lifespan
+        ballast_rep_cycles = led_lifespan / ballast_lifespan
 
         fluor_savings_8 = (
             fluor_rep_cycles * (self.fluor_cost + self.labor_cost)
