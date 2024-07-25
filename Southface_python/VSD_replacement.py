@@ -83,12 +83,22 @@ class VSDreplace:
         return results
 
     def set_costs(
-        self, per_kwh_cost, per_kw_peak_cost, uptime_factory
+        self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory
     ):
         self.cost_peak = per_kw_peak_cost
         self.cost_kw = per_kwh_cost
+        self.cost_therm = per_therm_cost
         self.uptime = uptime_factory
 
     def asDataFrame(self, results):
         df = pd.DataFrame([results])
         return df
+    
+    def processVSD(sheet, dictionaries, costs):
+        vsd_df = sheet.set_index(sheet.columns[0])
+        vsd_replacement = VSDreplace(vsd_df, dictionaries['VSD'])
+        vsd_replacement.read_values()
+        vsd_replacement.set_costs(*costs)
+        vsd_results = vsd_replacement.VSDcalc()
+        vsd_final = vsd_replacement.asDataFrame(vsd_results)
+        return vsd_final
