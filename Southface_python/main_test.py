@@ -27,52 +27,64 @@ def dictonary_maker(constants):
         if section_name not in section_names:
             section_names.append(section_name)
             
-    # Creates a list of dictionary names for assignment
-    dict_name_list = []
-    for y in section_names:
-        dict_name_list.append( y + "_dict")
-
-    # Assigns keys and values to dictionary name
-    for i in range(len(section_names)):
-        var = section_names[i] # Section
-        dict_name = dict_name_list[i] # Dictionary Name
-        r = re.compile(".*" + var) # Creates Regex object
-        matched_columns = list(filter(r.match, use_name)) # Filters for columns matching Regex object
-        
-        if len(matched_columns) >= 2: # Makes sure dict has 2 columsn
-            # Assigning keys and values
-            key_col, value_col = matched_columns[:2] # Just in case there are more than 2 columns
-            # Creating Dictionary
-            globals()[dict_name] = pd.Series(constants[value_col].dropna().values, index= constants[key_col].dropna()).to_dict()
+            
+    dictionaries = {}
+    for section in section_names:
+        r = re.compile(".*" + section)
+        matched_columns = list(filter(r.match, use_name))
+        if len(matched_columns) >= 2:
+            key_col, value_col = matched_columns[:2]
+            dictionaries[section] = pd.Series(constants[value_col].dropna().values, index= constants[key_col].dropna()).to_dict()
         else:
-            print(f"Not enough columns matched for {var}")
+            print(f"Not enough columns matched for {section}")
+        
+        return dictionaries
+    # # Creates a list of dictionary names for assignment
+    # dict_name_list = []
+    # for y in section_names:
+    #     dict_name_list.append( y + "_dict")
+        
+    # # Assigns keys and values to dictionary name
+    # for i in range(len(section_names)):
+    #     var = section_names[i] # Section
+    #     dict_name = dict_name_list[i] # Dictionary Name
+    #     r = re.compile(".*" + var) # Creates Regex object
+    #     matched_columns = list(filter(r.match, use_name)) # Filters for columns matching Regex object
+        
+    #     if len(matched_columns) >= 2: # Makes sure dict has 2 columsn
+    #         # Assigning keys and values
+    #         key_col, value_col = matched_columns[:2] # Just in case there are more than 2 columns
+    #         # Creating Dictionary
+    #         globals()[dict_name] = pd.Series(constants[value_col].dropna().values, index= constants[key_col].dropna()).to_dict()
+    #     else:
+    #         print(f"Not enough columns matched for {var}")
             
         
     
 def main(input_path, output_path):
     input_workbook = pd.read_excel(input_path, engine = 'openpyxl', sheet_name = None)
-    
     constants = input_workbook['Constants']
+    dictionaries = dictonary_maker(constants)
     
     #facility_dict, vsd_dict, led_dict, pipe_dict = load_variables(constants)
-    dictonary_maker(constants)
-    for var_name, var_value in FC_dict.items():
-        globals()[var_name] = var_value
+    # dictonary_maker(constants)
+    # for var_name, var_value in FC_dict.items():
+    #     globals()[var_name] = var_value
         
     # Bill Analysis
     # !!!!!Always first!!!!!
     utility_bill = input_workbook['Utility Bills']
-    bill_analysis = UtilityBill(utility_bill)
+    per_kwh_cost, per_kw_peak_cost, per_therm_cost, combined_bill_data = utility_bill.processUtilityBill()
     
-    annual_bill, energy_costs = bill_analysis.utility_analysis()
+    # bill_analysis = UtilityBill(utility_bill)
+    # annual_bill, energy_costs = bill_analysis.utility_analysis()
+    # per_kwh_cost = energy_costs['Price per kWh ($)']
+    # per_kw_peak_cost = energy_costs['Price per Peak kW ($)']
+    # per_therm_cost = energy_costs['Price per Therm ($)']
+    # #per_therm_cost = 10
     
-    per_kwh_cost = energy_costs['Price per kWh ($)']
-    per_kw_peak_cost = energy_costs['Price per Peak kW ($)']
-    #per_therm_cost = energy_costs['Price per Therm ($)']
-    per_therm_cost = 10
-    
-    energy_costs_df = bill_analysis.asDataFrame(energy_costs)
-    annual_bill = bill_analysis.asDataFrame(annual_bill)
+    # energy_costs_df = bill_analysis.asDataFrame(energy_costs)
+    # annual_bill = bill_analysis.asDataFrame(annual_bill)
     #--------------------------------------------------------------------------#
     # VSD replacement
     vsd_sheet = input_workbook['VSD Replacement']
@@ -115,8 +127,7 @@ def main(input_path, output_path):
     # Writing Section
     writer = pd.ExcelWriter(output_path, engine = 'xlsxwriter')
 
-    energy_costs_df.to_excel(writer, sheet_name='Bill Analysis', index=False)
-    annual_bill.to_excel(writer, sheet_name='Bill Analysis', index=False, startrow = 10)
+    combined_bill_data.to_excel(writer, sheet_name='Bill Analysis', index=False)
     
     vsd_final.to_excel(writer, sheet_name= "VSD Replacment", index = False)
     
