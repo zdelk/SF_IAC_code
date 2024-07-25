@@ -3,8 +3,9 @@ import numpy as np
 import pandas as pd
 
 class AirLeak:
-    def __init__(self, AirLeak_dict):
+    def __init__(self, AirLeak_dict, t_A):
         self.set_const(AirLeak_dict)
+        self.t_A = t_A
         
     def set_const(self, dict):
         for key, value in dict.items():
@@ -58,13 +59,23 @@ class AirLeak:
         }
         return results
     
-    def set_costs(self, per_kw_peak_cost, per_kwh_cost, uptime_factory, t_A):
+    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory):
         self.per_kw_peak_cost = per_kw_peak_cost
         self.per_kwh_cost = per_kwh_cost
+        self.per_therm_cost = per_therm_cost
         self.uptime = uptime_factory
-        self.t_A = t_A
     
     def asDataFrame(self, results):
         df = pd.DataFrame([results])
         
         return df
+    
+    def process( dictionaries, costs):
+        al_dict = dictionaries['AirLeak']
+        t_A = dictionaries['FC']['t_A']
+        air_leaks = AirLeak(al_dict, t_A)
+        air_leaks.set_costs(*costs)
+        air_leak_results = air_leaks.air_leak_calculation()
+        air_leak_final = air_leaks.asDataFrame(air_leak_results)
+        
+        return air_leak_final
