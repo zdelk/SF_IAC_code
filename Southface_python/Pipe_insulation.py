@@ -2,21 +2,13 @@ import pandas as pd
 import numpy as np
 
 # To Use in main():
-    # # Pipe insulation
-    # k_vals = pd.read_csv(k_val_path)
-    # pipe_sheet = input_workbook['Pipe Data']
-    # pipe_insulation = PipeInsulation(pipe_sheet, k_vals, Pipe_dict)
-    # pipe_insulation.set_costs(per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory)
-    # pipe_cost_data, pipe_table_data, pipe_heat_savings = pipe_insulation.pipe_final()
-
-    # len1 = 1
-    # len2 = len1 + len(pipe_cost_data) + 2
-    # len3 = len2 + len(pipe_table_data) + 2
 
 class PipeInsulation:
-    def __init__(self, pipe_data, k_values, pipe_dict):
+
+    
+    def __init__(self, pipe_data, pipe_dict, t_A):
         self.pipe_data = pipe_data
-        self.k_values = k_values
+        self.t_A = t_A
         self.set_const(pipe_dict)
 
     def set_const(self, dict):
@@ -25,8 +17,10 @@ class PipeInsulation:
 
     def insulation_calculator(self):
         pipe_data = self.pipe_data.copy()
-        k_values = self.k_values.copy()
-
+        #k_values = self.k_values.copy()
+        k_val_path = "Data/K_values.csv"
+        k_values = pd.read_csv(k_val_path)
+            
         for i in range(len(pipe_data)):
             # Assigning data from table to variables for ease of use
             t_p = pipe_data.loc[i, "Surface_Temp"]
@@ -101,7 +95,7 @@ class PipeInsulation:
                 annual_btu_loss * self.boiler_efficiency * 10 ** (-6)
             )  # Note the efficiency
 
-            annual_cost_saving = MMBtu_savings * self.per_MMBTU_cost  # Annual Savings
+            annual_cost_saving = MMBtu_savings * self.per_therm_cost  # Annual Savings
 
             my_table = pd.DataFrame(
                 {  # Creating data frame if Gas system
@@ -238,15 +232,24 @@ class PipeInsulation:
         # Cost Analysis
         pipe_cost_data = round(self.pipe_cost_n_ssp(pipe_savings_data), 2)
 
-        return pipe_cost_data, pipe_table_data, pipe_heat_savings
+        return pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data
 
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_MMBTU_cost, uptime_factory, t_A):
+    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory):
         self.per_kwh_cost = per_kwh_cost
         self.per_peak_cost = per_kw_peak_cost
-        self.per_MMBTU_cost = per_MMBTU_cost
+        self.per_therm_cost = per_therm_cost
         self.uptime = uptime_factory
-        self.t_A = t_A
 
     def asDataFrame(self, results):
         df = pd.DataFrame([results])
         return df
+    
+    def process(self, dictionaries, costs):
+        pipe_dict = dictionaries['Pipe']
+        t_A = dictionaries['FC']['t_A']
+        pipe_insulation = PipeInsulation(self, pipe_dict, t_A)
+        pipe_insulation.set_costs(*costs)
+        pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data = pipe_insulation.pipe_final()
+        pipe_full = pd.concat([pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data], axis=1)
+        
+        return pipe_full
