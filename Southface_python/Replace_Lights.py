@@ -66,12 +66,21 @@ class LEDReplacement:
 
         return results
 
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, uptime_factory):
+    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory):
         self.per_kwh = per_kwh_cost
         self.per_peak = per_kw_peak_cost
+        self.per_therm = per_therm_cost
         self.uptime = uptime_factory
 
     def asDataFrame(self, results):
         df = pd.DataFrame([results])
 
         return df
+
+    def processLEDReplacment(dictionaries, costs):
+        led_replacement = LEDReplacement(dictionaries["LED"])
+        led_replacement.set_costs(*costs) 
+        led_results = led_replacement.LED_savings()
+        led_final = led_replacement.asDataFrame(led_results)
+        
+        return led_final
