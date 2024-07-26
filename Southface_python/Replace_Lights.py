@@ -77,7 +77,7 @@ class LEDReplacement:
 
         return df
 
-    def processLEDReplacment(dictionaries, costs):
+    def process(dictionaries, costs):
         led_replacement = LEDReplacement(dictionaries["LED"])
         led_replacement.set_costs(*costs) 
         led_results = led_replacement.LED_savings()
