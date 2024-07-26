@@ -94,7 +94,7 @@ class VSDreplace:
         df = pd.DataFrame([results])
         return df
     
-    def processVSD(sheet, dictionaries, costs):
+    def process(sheet, dictionaries, costs):
         vsd_df = sheet.set_index(sheet.columns[0])
         vsd_replacement = VSDreplace(vsd_df, dictionaries['VSD'])
         vsd_replacement.read_values()
