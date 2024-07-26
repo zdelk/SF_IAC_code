@@ -1,3 +1,5 @@
+# 7/26/24 works as expected
+# Will need to be changed if different types of terms are used
 # Bill Analysis
 import pandas as pd
 import numpy as np
