@@ -1,5 +1,6 @@
 # Bill Analysis
 import pandas as pd
+import numpy as np
 
 #test_bill = pd.read_excel('bill_data(polycom).xlsx')
 class UtilityBill:
@@ -30,13 +31,14 @@ class UtilityBill:
         df = pd.DataFrame([results])
         return df
     
-    def processUtilityBill(self):
+    def process(self):
         annual_bill, energy_costs = self.utility_analysis()
         per_kwh_cost = energy_costs['Price per kWh ($)']
         per_hw_peak_cost = energy_costs['Price per Peak kW ($)']
         per_therm_cost = energy_costs['Price per Therm ($)']
         energy_costs_df = self.asDataFrame(energy_costs)
         annual_bill_df = self.asDataFrame(annual_bill)
-        combined_bill_data = pd.concat([energy_costs_df, annual_bill_df], axis=1)
+        blank_col = pd.DataFrame(np.nan, index=energy_costs_df, columns=['---'])
+        combined_bill_data = pd.concat([energy_costs_df, blank_col, annual_bill_df], axis=1)
         return per_kwh_cost, per_hw_peak_cost, per_therm_cost, combined_bill_data
 
