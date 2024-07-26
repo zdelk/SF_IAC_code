@@ -1,9 +1,0 @@
-﻿ID,Description,Amount_of_Fittings,Location,Material,Diameter_inner_in,Diameter_outer_in,Length_ft,Surface_Temp
-1,Thin Pipe,1,0559.mov,Galvanized Steel,2,2.375,14,253
-2,Thin Pipe,1,0606.mov,Iron,2,2.375,30,267
-3,Thick Pipe,1,0606.mov,Iron,4,4.5,3,267
-4,Flanges (Terminated),1,0604.mov,Iron,4,4.5,RIS,443
-5,Valve + Flanges,1,0604.mov,Iron,2,2.375,RIS,254
-6,Boiler Pipe,1,0604.mov,Iron,2,2.375,8,120
-8,Boiler Line Pipe,1,Large Boiler,Iron,3,3.5,30,270
-9,Flanges,5,Large Boiler,Iron,6,6.625,RIS,288
