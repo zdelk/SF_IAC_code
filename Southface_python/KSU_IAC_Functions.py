@@ -1,180 +1,78 @@
+# Reusing this file name since it already existed
+# Now it will hold general functions to be used in main
 import pandas as pd
 import numpy as np
 import importlib
 
-k_data = pd.read_csv('Data/K_values.csv') # CSV file that holds K values for various materials
-#-----------------------------------------------------------------------------------------------------#
-#----------------------------General Pipe Insulation Calculator---------------------------------------#
-#----------------------------------Itemized Heat Loss-------------------------------------------------#
-# Takes in the base pipe dataset
-# Calculates Heat Loss (Non-insulated, Insulated, Difference)
-def insulation_calculator(pipe_data, k_values = k_data):
-    pipe_data = pipe_data.copy() # Copying dataset so it doest get overwritten
+# ---------------------------------------------------------------------------#
+# Dictionary Maker (Could put in a seperate script)
+def dictonary_maker(constants):
+    full_names = list(constants.columns)
+    # Get column names that have 'Var' and 'Value' (Not Variables)
+    use_name = [word for word in full_names if 
+                (re.search(r"Var$", word) or re.search(r"Value$", word))]
     
-    for i in range(len(pipe_data)):
-        # Assigning data from table to variables for ease of use
-        t_p = pipe_data.loc[i, 'Surface_Temp']
-        d_in = pipe_data.loc[i, 'Diameter_inner_in']
-        d_out = pipe_data.loc[i, 'Diameter_outer_in']
-        unit_count = pipe_data.loc[i, 'Amount_of_Fittings']
-        
-        # Checks if length of the pipe is 'RIS' (indicating special fitting)
-        # If so, uses standard ris length. Else, converts length value to float
-        if pipe_data.loc[i, 'Length_ft'] == "RIS":
-            length_pipe = length_ris
+    # Loop that returns just the section names and no duplicates
+    section_names = []
+    for name in use_name:
+        section_name = name.split(" ")[0]
+        if section_name not in section_names:
+            section_names.append(section_name)
+    
+    # print(section_names)
+    dictionaries = {}
+    
+    for section in section_names:
+        r = re.compile(".*" + section)
+        matched_columns = list(filter(r.match, use_name))
+        if len(matched_columns) >= 2:
+            key_col, value_col = matched_columns[:2]
+            dictionaries[section] = pd.Series(
+                constants[value_col].dropna().values, index=constants[key_col].dropna()
+            ).to_dict()
         else:
-            length_pipe = float(pipe_data.loc[i, 'Length_ft'])
+            print(f"Not enough columns matched for {section}")
         
-        #Pulling K_val for the specific material from the k_value CSV file    
-        k_val = k_values.loc[k_values['Material'] == pipe_data.loc[i, 'Material'], 'K_value'].values[0]
-        
-        r_out = d_out / 2 # Radius of pipe
-        dT = t_p - t_A #Delta T (Temperature Difference)
-        
-        d_prime_non = r_out * np.log(d_out / d_in) # d'(Non-insulated)
-        pipe_data.loc[i, "D'(non)"] = d_prime_non
-        
-        d_prime_in = (r_out + d_thickness) * np.log((r_out + d_thickness)/ r_out) # d'(Insulated)
-        pipe_data.loc[i, "D'(insulated)"] = d_prime_in
-        
-        r_non = d_prime_non / k_val # thermal resistance (Non-insulated)
-        r_in = d_prime_in / k_insulation # thermal resistance (Insulated)
-        pipe_data.loc[i, "R non_in"] = r_non
-        pipe_data.loc[i, "R in"] = r_in
-        
-        area_non = (d_in / 12) * np.pi * length_pipe # Lateral Surface Area(Non-insulated)
-        area_in = (d_out / 12) * np.pi * length_pipe # Lateral Surface Area(Insulated)
-        pipe_data.loc[i, "Area_Non(ft^2)"] = area_non
-        pipe_data.loc[i, "Area_IN(ft^2)"] = area_in
-        
-        u_non = 1 / (r_non + r_Air) # Thermal transmittance(Non-insulated)
-        u_in = 1 / (r_in + r_Air) # Thermal transmittance(Insulated)
-        pipe_data.loc[i, "U non"] = u_non
-        pipe_data.loc[i, "U in"] = u_in
-        
-        q_non = dT * area_non * u_non # Quantity of heat(Non-insulated)
-        q_in = dT * area_in * u_in # Quantity of heat(Insulated)
-        q_diff = q_non - q_in # Quantity of heat(Difference)
-        pipe_data.loc[i, "Q non"] = q_non * unit_count
-        pipe_data.loc[i, "Q in"] = q_in * unit_count
-        pipe_data.loc[i, "Q Diff"] = q_diff * unit_count
-        
-    return(pipe_data)
-#-----------------------------------------------------------------------------------------------------#
-#---------------------------------Pipe Heat and Cost Savings Calculator-------------------------------#
-#-----------------------------------------------------------------------------------------------------#
-# Calculates overall Heat Loss
-# Uses that to calculate relevant saving info
-# Also give overall cost savings
-def pipe_saving_calc(var, per_kw_peak_cost=0, per_kwh_cost=0, 
-                     per_MMBTU_cost=0, fuel_source = 'None'):
-    type = fuel_source # Boiler could be Gas or Electric
-    btu_per_hour_loss = var # Reassign for readability
-    if type == 'Gas': # If boiler is Gas
-        annual_btu_loss = btu_per_hour_loss * uptime_factory # Getting annual BTU los
-        #Converting to MMBtu(generally it is billed)
-        MMBtu_savings = annual_btu_loss * boiler_efficiency * 10**(-6) # Note the efficiency
-        
-        annual_cost_saving = MMBtu_savings * per_MMBTU_cost # Annual Savings
-        
-        my_table = pd.DataFrame({ # Creating data frame if Gas system
-            'Heat_Loss_Savings_Per_Hour': [round(var, 2)],
-            'Annual_Heat_Loss_Savings': [round(annual_btu_loss)],
-            'Annual_MMBTU_Savings': [round(MMBtu_savings, 2)],
-            'Annual_Cost_Savings': [round(annual_cost_saving, 2)]
-        })
-        output = my_table
-    
-    elif type == 'Electric': # If boiler is Electric
-        peak_reduction = btu_per_hour_loss / 3412 # Btu to Kw conversion
-        annual_peak_reduction = peak_reduction * 12 # Yearly Peak Savings(KW)
-        annual_kwh_reduction = peak_reduction * uptime_factory # Yearly Kwh Savings(Kwh) Note no efficiency
-        
-        per_kw_savings = annual_peak_reduction * per_kw_peak_cost # Yearly Peak Savings($)
-        peak_savings = annual_kwh_reduction * per_kwh_cost # Yearly Kwh Savings($)
-        annual_cost_saving = per_kw_savings + peak_savings # Annual Savings($)
+    return dictionaries, section_names
 
-        my_table = pd.DataFrame({ # Creating dataframe if Electric System
-            'Heat_Loss_Savings_Per_Hour': [round(var, 2)],
-            'Peak_Demand_Reduction': [round(peak_reduction, 2)],
-            'Annual_Peak_Demand_Reduction': [round(annual_peak_reduction, 2)],
-            'Annual_KWh_Reduction': [round(annual_kwh_reduction, 2)],
-            'Cost_Savings_Peak': [round(peak_savings, 2)],
-            'Cost_Savings_KWh': [round(per_kw_savings, 2)],
-            'Annual_Cost_Savings': [round(annual_cost_saving, 2)]
-        })
-        output = my_table
-    else:
-        output = "Is the system Gas or Electric?" # If system isn't Specified
-    return(output)
-#-----------------------------------------------------------------------------------------------------#
-#---------------------------------Pipe Implementation Cost and SPP------------------------------------#
-#-----------------------------------------------------------------------------------------------------#
-# Calculated relevant implementation costs and SPP
-def pipe_cost_n_ssp(pipe_data, savings_data):
-    count_RIS = 0 # Initialize number of Special Fittings
-    total_feet = 0 # Initialize total length of pipe (ft)
-    annual_savings = savings_data['Annual_Cost_Savings'][0] # Pulling Annual Cost Savings from table
+def dynamic_import(module_name, class_name):
+    module = importlib.import_module(module_name)
+    return getattr(module, class_name)
     
-    for i in range(len(pipe_data)): # Counts number of special fitting
-        if pipe_data.loc[i, 'Length_ft'] == 'RIS':
-            count_RIS += pipe_data.loc[i, 'Amount_of_Fittings']
-        else: # Also calculates total length of pipe to be insulated
-            total_feet += float(pipe_data.loc[i, 'Length_ft'])
+# Need to decide if function is neccesarry
+def full_analysis(input_workbook, section_names):
+    
+    sheet_list = list(input_workbook.keys())
+    
+    for name in section_names:
+        sheet_name = next((title for title in sheet_list if re.search(name + r".*", title)), None)
+        
+        try:
+            module_name, class_name = section_to_class_map[name]
+        except KeyError as e:
+            print(f"{name} has no associated class: {e}")
+            continue
+        
+        if class_name is None:
+            print(f"No class found for section: {name}")
+            continue
+        
+        try:
+            cls = dynamic_import(module_name, class_name)
+        except ImportError as e:
+            print(f"Error importing class {class_name} from {module_name}: {e}")
+            continue
+        
+        print(f"Processing section: {name}")
+        print(f"Class name: {class_name}")
+        print(f"Sheet name: {sheet_name}")
+        
+        if sheet_name:
+            print(f'{name} has a sheet in the workbook')
+            output = cls.process(input_workbook[sheet_name], dictionaries, costs)
+        else:
+            print(f'{name} does not have a sheet in the workbook')
+            output = cls.process(dictionaries, costs)
             
-    #Self-explanatory variables
-    labor_hours = total_feet * pipe_manhour_conversion 
-    labor_cost = labor_hours * pipe_manhour_cost
-    insulation_cost = total_feet * pipe_mat_cost
-    special_cover_cost = count_RIS * pipe_sf_cost
-    implementation_cost = labor_cost + insulation_cost + special_cover_cost
-    spp_years = implementation_cost / annual_savings
-    spp_months = round(spp_years * 12, 1)
-    
-    output_table = pd.DataFrame({ # Data frame for all data from function
-        "Total Feet": [round(total_feet, 2)],
-        "# of Special Fittings": [count_RIS],
-        "Total Labour Hours": [labor_hours],
-        "Labor Cost": [labor_cost],
-        "Insulation Cost": [insulation_cost],
-        "Special Covers Cost": [special_cover_cost],
-        "Implementation Cost": [implementation_cost],
-        "SSP (years)": [spp_years],
-        "SPP (months)": [spp_months]
-    })
-    
-    return(output_table)
-
-#-----------------------------------------------------------------------------------------------------#
-#---------------------------------Final Function to Call in Processor---------------------------------#
-#-----------------------------------------------------------------------------------------------------#
-def pipe_final(pipe_data, per_kw_peak_cost, per_kwh_cost, 
-                     per_MMBTU_cost, fuel_source):
-    # Running initial Calculator function
-    pipe_calculations = round(insulation_calculator(pipe_data), 2) # Running Data through pipe calculator from KSU_IAC_functions
-
-    # Creating list of columns for the output table
-    pipe_table_cols = ["ID", "Description", "Location", "Diameter_inner_in", 
-                       "Length_ft", "Surface_Temp", "Q non", "Q in", "Q Diff"]
-
-    # Sub-setting calculations to only columns need in the output table
-    pipe_table_data = pipe_calculations[pipe_table_cols]
-
-    Q_non_total = pipe_table_data['Q non'].sum() # Total Heat Loss from Non-Insulated Pipes
-    Q_in_total = pipe_table_data['Q in'].sum() # Estimated Total Heat Loss from Insulated Pipes
-    Q_diff_total = pipe_table_data['Q Diff'].sum() # Estimated Total Difference between Non-Insulated and Insulated
-
-    # Creating Heat Savings DataFrame
-    pipe_heat_savings = pd.DataFrame({
-                        'Non-Insulated': [round(Q_non_total, 2)],
-                        'Insulated': [round(Q_in_total, 2)], 
-                        'Total Savings': [round(Q_diff_total)]})
-
-    # Energy and Cost Savings for Pipe Insulation
-    pipe_savings_data = pipe_saving_calc(Q_diff_total, per_kw_peak_cost, per_kwh_cost, 
-                     per_MMBTU_cost, fuel_source)
-
-    # Cost Analysis
-    pipe_cost_data = round(pipe_cost_n_ssp(pipe_data, pipe_savings_data), 2) 
-    
-    return pipe_cost_data, pipe_table_data, pipe_heat_savings
+            print_dict[class_name] = output
+        return print_dict
