@@ -19,7 +19,7 @@ class PipeInsulation:
     def insulation_calculator(self):
         pipe_data = self.pipe_data.copy()
         #k_values = self.k_values.copy()
-        k_val_path = "Data/K_values.csv"
+        k_val_path = "../Data/K_values.csv"
         k_values = pd.read_csv(k_val_path)
             
         for i in range(len(pipe_data)):
