@@ -11,8 +11,8 @@ from KSU_IAC_Functions import *
 
 # --------------------------------------------------------------------------#
 # Input and Output Paths
-input_path = "Data/test_input.xlsx"
-output_path = "Data/test_output_8.xlsx" # Set to not overwrite
+input_path = "../Data/test_input.xlsx"
+output_path = "../Data/test_output_8.xlsx" # Set to not overwrite
 
 # Main Function
 
@@ -33,12 +33,18 @@ def main(input_path, output_path):
     print_dict['Utility Bills'] = combined_bill_data
     
     costs = (per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory)
+    
+    
+    #costs = (per_kwh_cost, per_kw_peak_cost, 1.5, uptime_factory)
 
     section_to_class_map = {
         'AirLeak': ('Air_Line_leaks', 'AirLeak'),
         'Pipe': ('Pipe_insulation', 'PipeInsulation'),
         'LED': ('Replace_Lights', 'LEDReplacement'),
-        'VSD': ('VSD_replacement', 'VSDreplace')
+        'Occupancy': ('Replace_Lights', 'OccupancySensor'),
+        'Daylight': ('Replace_Lights', 'DaylightSensor'),
+        'VSD': ('VSD_replacement', 'VSDreplace'),
+        'Micro': ('Microturbine_CHP', 'Microturbine')
     }
 
     
