@@ -53,8 +53,8 @@ class LEDReplacement:
             "Monthly Peak kW Reduction": peak_reduction,
             "Annual kWh Savings": kwh_reduction,
             "Peak Cost Savings": peak_cost_savings,
-            "kWh Cost Savings($)": kwh_cost_savings,
-            "Reduction Savings($)": reduction_savings,
+            "kWh Cost Savings ($)": kwh_cost_savings,
+            "Reduction Savings ($)": reduction_savings,
             "Led Lifespan (years)": led_lifespan,
             "Replacement Cycles Bulbs (years)": fluor_rep_cycles,
             "Replacement Cycles Ballast (years)": ballast_rep_cycles,
@@ -85,3 +85,108 @@ class LEDReplacement:
         led_final = led_replacement.asDataFrame(led_results)
         
         return led_final
+
+class OccupancySensor:
+    def __init__(self, dict):
+        self.set_const(dict)
+    
+    def set_const(self, dict):
+        for key, value in dict.items():
+            setattr(self, key, value)
+            
+    def occ_savings(self):
+        total_bulb_count = self.bulb_per_fix * self.fix_count
+        
+        kwh_reduction = total_bulb_count * self.bulb_watt * (1/1000) * self.uptime * self.savings_var
+        
+        kwh_cost_savings = kwh_reduction * self.per_kwh
+        
+        capitol = self.fix_count * self.sensor_cost
+        labor = self.fix_count * self.labor_cost
+        
+        imp_cost = capitol + labor
+        
+        spp = imp_cost / kwh_cost_savings * 12
+        
+        results = {
+            "Annual kWh Savings": kwh_reduction,
+            "kWh Cost Savings ($)": kwh_cost_savings,
+            "Capital Cost ($)": capitol,
+            "Labor Cost ($)": labor,
+            "Implementation Cost ($)": imp_cost,
+            "SPP months": spp,
+        }
+        
+        return results
+    
+    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory):
+        self.per_kwh = per_kwh_cost
+        self.per_peak = per_kw_peak_cost
+        self.per_therm = per_therm_cost
+        self.uptime = uptime_factory
+
+    def asDataFrame(self, results):
+        df = pd.DataFrame([results])
+
+        return df
+
+    def process(dictionaries, costs):
+        occupancy_sensor = OccupancySensor(dictionaries["Occupancy"])
+        occupancy_sensor.set_costs(*costs)
+        os_results = occupancy_sensor.occ_savings()
+        os_final = occupancy_sensor.asDataFrame(os_results)
+        
+        return os_final
+    
+
+class DaylightSensor:
+    def __init__(self,dict):
+        self.set_const(dict)
+    
+    def set_const(self, dict):
+        for key, value in dict.items():
+            setattr(self, key, value)
+    
+    def daylight_savings(self):
+        total_bulb_count = self.bulb_per_fix * self.fix_count
+        
+        kwh_reduction = total_bulb_count * self.bulb_watt * (1/1000) * self.uptime * self.savings_var
+        
+        kwh_cost_savings = kwh_reduction * self.per_kwh
+        
+        capitol = self.fix_count * self.sensor_cost
+        labor = self.fix_count * self.labor_cost
+        
+        imp_cost = capitol + labor
+        
+        spp = imp_cost / kwh_cost_savings * 12
+        
+        results = {
+            "Annual kWh Savings": kwh_reduction,
+            "kWh Cost Savings ($)": kwh_cost_savings,
+            "Capital Cost ($)": capitol,
+            "Labor Cost ($)": labor,
+            "Implementation Cost ($)": imp_cost,
+            "SPP months": spp,
+        }
+        
+        return results
+    
+    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory):
+        self.per_kwh = per_kwh_cost
+        self.per_peak = per_kw_peak_cost
+        self.per_therm = per_therm_cost
+        self.uptime = uptime_factory
+
+    def asDataFrame(self, results):
+        df = pd.DataFrame([results])
+
+        return df
+
+    def process(dictionaries, costs):
+        daylight_sensor = DaylightSensor(dictionaries["Daylight"])
+        daylight_sensor.set_costs(*costs)
+        daylight_results = daylight_sensor.daylight_savings()
+        daylight_final = daylight_sensor.asDataFrame(daylight_results)
+        
+        return daylight_final       
