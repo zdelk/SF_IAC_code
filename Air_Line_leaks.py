@@ -39,7 +39,7 @@ class AirLeak:
         
         total_energy_savings = kw_reduction * self.uptime
         
-        total_cost_savings = total_energy_savings * self.per_kwh_cost + kw_reduction * self.per_kw_peak_cost
+        total_cost_savings = total_energy_savings * self.cost_kwh + kw_reduction * self.cost_peak
         
         labor_cost = self.labor_rate * self.air_fix_time * self.air_staff_needed
         
@@ -60,10 +60,11 @@ class AirLeak:
         }
         return results
     
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory):
-        self.per_kw_peak_cost = per_kw_peak_cost
-        self.per_kwh_cost = per_kwh_cost
-        self.per_therm_cost = per_therm_cost
+    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
+        self.cost_peak = per_kw_peak_cost
+        self.cost_kwh = per_kwh_cost
+        self.cost_therm = per_therm_cost
+        self.cost_mmbtu = per_mmbtu_cost
         self.uptime = uptime_factory
     
     def asDataFrame(self, results):

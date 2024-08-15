@@ -22,8 +22,8 @@ class LEDReplacement:
         peak_reduction = self.num_of_bulbs * (self.current_watts - self.led_watts) / 1000
         kwh_reduction = peak_reduction * self.uptime
 
-        peak_cost_savings = peak_reduction * self.per_peak * 12
-        kwh_cost_savings = kwh_reduction * self.per_kwh
+        peak_cost_savings = peak_reduction * self.cost_peak * 12
+        kwh_cost_savings = kwh_reduction * self.cost_kwh
 
         reduction_savings = peak_cost_savings + kwh_cost_savings
 
@@ -69,7 +69,7 @@ class LEDReplacement:
 
     def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
         self.cost_peak = per_kw_peak_cost
-        self.cost_kw = per_kwh_cost
+        self.cost_kwh = per_kwh_cost
         self.cost_therm = per_therm_cost
         self.cost_mmbtu = per_mmbtu_cost
         self.uptime = uptime_factory
@@ -100,7 +100,7 @@ class OccupancySensor:
         
         kwh_reduction = total_bulb_count * self.bulb_watt * (1/1000) * self.uptime * self.savings_var
         
-        kwh_cost_savings = kwh_reduction * self.per_kwh
+        kwh_cost_savings = kwh_reduction * self.cost_kwh
         
         capitol = self.fix_count * self.sensor_cost
         labor = self.fix_count * self.labor_cost
@@ -122,7 +122,7 @@ class OccupancySensor:
 
     def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
         self.cost_peak = per_kw_peak_cost
-        self.cost_kw = per_kwh_cost
+        self.cost_kwh = per_kwh_cost
         self.cost_therm = per_therm_cost
         self.cost_mmbtu = per_mmbtu_cost
         self.uptime = uptime_factory
@@ -155,7 +155,7 @@ class DaylightSensor:
         
         kwh_reduction = total_bulb_count * self.bulb_watt * (1/1000) * self.uptime * self.savings_var
         
-        kwh_cost_savings = kwh_reduction * self.per_kwh
+        kwh_cost_savings = kwh_reduction * self.cost_kwh
         
         capitol = self.fix_count * self.sensor_cost
         labor = self.fix_count * self.labor_cost
@@ -178,7 +178,7 @@ class DaylightSensor:
 
     def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
         self.cost_peak = per_kw_peak_cost
-        self.cost_kw = per_kwh_cost
+        self.cost_kwh = per_kwh_cost
         self.cost_therm = per_therm_cost
         self.cost_mmbtu = per_mmbtu_cost
         self.uptime = uptime_factory

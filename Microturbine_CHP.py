@@ -24,7 +24,7 @@ class Microturbine:
         
         # Savings Calculations
         
-        annual_kwh_cost_savings = self.per_kwh_cost * annual_energy_gen
+        annual_kwh_cost_savings = self.cost_kwh * annual_energy_gen
         
         #!!!! Edit for mmbtu or therm
         # if self.cost_per_mmbtu != 0:
@@ -32,7 +32,7 @@ class Microturbine:
         # else:
         #     annual_gas_cost = self.cost_per_therm * annual_extra_gas * 10
         ###
-        annual_gas_cost = self.per_therm_cost * annual_extra_gas * 10
+        annual_gas_cost = self.cost_therm * annual_extra_gas * 10
         ###
         annual_maintenance = self.mt_count * self.maint_cost
         
@@ -69,7 +69,7 @@ class Microturbine:
 
     def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
         self.cost_peak = per_kw_peak_cost
-        self.cost_kw = per_kwh_cost
+        self.cost_kwh = per_kwh_cost
         self.cost_therm = per_therm_cost
         self.cost_mmbtu = per_mmbtu_cost
         self.uptime = uptime_factory

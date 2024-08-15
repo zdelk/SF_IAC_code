@@ -35,7 +35,7 @@ class UtilityBill:
             "Price per kWh ($)": per_kwh_cost,
             "Price per Peak kW ($)": per_kw_peak_cost,
             "Price per Therm ($)": per_therm_cost,
-            "Price Per MMBTU ($)": per_mmbtu_cost
+            "Price per MMBTU ($)": per_mmbtu_cost
         }
         return annual_bill, energy_costs
 

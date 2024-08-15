@@ -96,7 +96,7 @@ class PipeInsulation:
                 annual_btu_loss * self.boiler_efficiency * 10 ** (-6)
             )  # Note the efficiency
 
-            annual_cost_saving = MMBtu_savings * self.per_therm_cost  # Annual Savings
+            annual_cost_saving = MMBtu_savings * self.cost_therm  # Annual Savings
 
             my_table = pd.DataFrame(
                 {  # Creating data frame if Gas system
@@ -116,10 +116,10 @@ class PipeInsulation:
             )  # Yearly Kwh Savings(Kwh) Note no efficiency
 
             per_kw_savings = (
-                annual_peak_reduction * self.per_peak_cost
+                annual_peak_reduction * self.cost_peak
             )  # Yearly Peak Savings($)
             peak_savings = (
-                annual_kwh_reduction * self.per_kwh_cost
+                annual_kwh_reduction * self.cost_kwh
             )  # Yearly Kwh Savings($)
             annual_cost_saving = per_kw_savings + peak_savings  # Annual Savings($)
 
@@ -237,7 +237,7 @@ class PipeInsulation:
 
     def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
         self.cost_peak = per_kw_peak_cost
-        self.cost_kw = per_kwh_cost
+        self.cost_kwh = per_kwh_cost
         self.cost_therm = per_therm_cost
         self.cost_mmbtu = per_mmbtu_cost
         self.uptime = uptime_factory

@@ -7,34 +7,71 @@ import importlib
 
 # ---------------------------------------------------------------------------#
 # Dictionary Maker (Could put in a seperate script)
-def dictonary_maker(constants):
-    full_names = list(constants.columns)
-    # Get column names that have 'Var' and 'Value' (Not Variables)
-    use_name = [word for word in full_names if 
-                (re.search(r"Var$", word) or re.search(r"Value$", word))]
+# def dictonary_maker(constants):
+#     full_names = list(constants.columns)
+#     # Get column names that have 'Var' and 'Value' (Not Variables)
+#     use_name = [word for word in full_names if 
+#                 (re.search(r"Var$", word) or re.search(r"Value$", word))]
     
-    # Loop that returns just the section names and no duplicates
-    section_names = []
-    for name in use_name:
-        section_name = name.split(" ")[0]
-        if section_name not in section_names:
-            section_names.append(section_name)
+#     # Loop that returns just the section names and no duplicates
+#     section_names = []
+#     for name in use_name:
+#         section_name = name.split(" ")[0]
+#         if section_name not in section_names:
+#             section_names.append(section_name)
     
-    # print(section_names)
-    dictionaries = {}
+#     # print(section_names)
+#     dictionaries = {}
     
-    for section in section_names:
-        r = re.compile(".*" + section)
-        matched_columns = list(filter(r.match, use_name))
-        if len(matched_columns) >= 2:
-            key_col, value_col = matched_columns[:2]
-            dictionaries[section] = pd.Series(
-                constants[value_col].dropna().values, index=constants[key_col].dropna()
-            ).to_dict()
-        else:
-            print(f"Not enough columns matched for {section}")
+#     for section in section_names:
+#         r = re.compile(".*" + section)
+#         matched_columns = list(filter(r.match, use_name))
+#         if len(matched_columns) >= 2:
+#             key_col, value_col = matched_columns[:2]
+#             dictionaries[section] = pd.Series(
+#                 constants[value_col].dropna().values, index=constants[key_col].dropna()
+#             ).to_dict()
+#         else:
+#             print(f"Not enough columns matched for {section}")
         
+#     return dictionaries, section_names
+
+def dictionary_2(file_path):
+    name = None
+    dictionaries = {}
+    section_dict = {}
+    
+    with open(file_path) as f:
+        for line in f:
+
+            if line.startswith("#") or line.strip() == '':
+                continue
+            
+            elif line.startswith("!"):
+                
+                if name:
+                    dictionaries[name] = section_dict
+                    
+                name = line[1:].strip()
+                section_dict = {}
+                
+            else:
+                key, value = line.strip().split(" = ")
+                try:
+                    value = float(value)
+                except:
+                    value = value
+                    
+                section_dict[key] = value
+                
+            if name:
+                dictionaries[name] = section_dict
+            
+
+    section_names = list(dictionaries.keys())
+    
     return dictionaries, section_names
+
 
 def dynamic_import(module_name, class_name):
     module = importlib.import_module(module_name)

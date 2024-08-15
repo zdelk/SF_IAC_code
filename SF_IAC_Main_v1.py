@@ -12,17 +12,18 @@ from KSU_IAC_Functions import *
 # --------------------------------------------------------------------------#
 # Input and Output Paths
 input_path = "../Data/test_input.xlsx"
-output_path = "../Data/test_output_8.xlsx" # Set to not overwrite
+input_text = "../Data/NBtest2.txt"
+output_path = "../Data/test_output_9.xlsx" # Set to not overwrite
 
 # Main Function
 
-def main(input_path, output_path):
+def main(input_path, input_text, output_path):
     print_dict = {}
     # Loading input workbook
     input_workbook = pd.read_excel(input_path, engine="openpyxl", sheet_name=None)
-    constants = input_workbook["Constants"]
-    dictionaries, section_names = dictonary_maker(constants)
-
+    
+    dictionaries, section_names = dictionary_2(input_text)
+    print(dictionaries)
     uptime_factory = dictionaries['FC']['uptime_factory']
     # Bill Analysis
     # !!!!!Always first!!!!!
@@ -99,4 +100,4 @@ def main(input_path, output_path):
 
 
 if __name__ == "__main__":
-    main(input_path, output_path)
+    main(input_path, input_text, output_path)
