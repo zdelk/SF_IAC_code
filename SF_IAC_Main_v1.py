@@ -28,11 +28,11 @@ def main(input_path, output_path):
     # !!!!!Always first!!!!!
     ub_sheet = input_workbook["Utility Bills"]
     utillity_bill = UtilityBill(ub_sheet)
-    per_kwh_cost, per_kw_peak_cost, per_therm_cost, combined_bill_data = utillity_bill.process()
+    per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, combined_bill_data = utillity_bill.process()
     
     print_dict['Utility Bills'] = combined_bill_data
     
-    costs = (per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory)
+    costs = (per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory)
     
     
     #costs = (per_kwh_cost, per_kw_peak_cost, 1.5, uptime_factory)

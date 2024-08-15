@@ -67,12 +67,13 @@ class Microturbine:
         return results
     
 
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, uptime_factory):
-        self.per_kwh_cost = per_kwh_cost
-        self.per_peak_cost = per_kw_peak_cost
-        self.per_therm_cost = per_therm_cost
+    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
+        self.cost_peak = per_kw_peak_cost
+        self.cost_kw = per_kwh_cost
+        self.cost_therm = per_therm_cost
+        self.cost_mmbtu = per_mmbtu_cost
         self.uptime = uptime_factory
-        
+    
     def asDataFrame(self, results):
         df = pd.DataFrame([results])
         return df
