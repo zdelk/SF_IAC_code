@@ -1,3 +1,7 @@
 {
-    "notebook.diff.overviewRuler": true
+    "notebook.diff.overviewRuler": true,
+    "editor.inlineSuggest.enabled": true,
+    "editor.quickSuggestions": {
+        "other": "off"
+    }
 }
