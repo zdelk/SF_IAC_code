@@ -13,7 +13,7 @@ from KSU_IAC_Functions import *
 # Input and Output Paths
 input_path = "../Data/test_input.xlsx"
 input_text = "../Data/NBtest2.txt"
-output_path = "../Data/test_output_9.xlsx" # Set to not overwrite
+output_path = "../Data/test_output_10.xlsx" # Set to not overwrite
 
 # Main Function
 
@@ -35,12 +35,11 @@ def main(input_path, input_text, output_path):
     
     costs = (per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory)
     
-    
-    #costs = (per_kwh_cost, per_kw_peak_cost, 1.5, uptime_factory)
-
     section_to_class_map = {
         'AirLeak': ('Air_Line_leaks', 'AirLeak'),
         'Pipe': ('Pipe_insulation', 'PipeInsulation'),
+        'Door': ('Pipe_insulation', 'OvenDoorInsulation'),
+        'Tank':('Pipe_insulation', 'TankInsulation'),
         'LED': ('Replace_Lights', 'LEDReplacement'),
         'Occupancy': ('Replace_Lights', 'OccupancySensor'),
         'Daylight': ('Replace_Lights', 'DaylightSensor'),
