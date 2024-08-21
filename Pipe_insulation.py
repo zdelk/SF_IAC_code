@@ -4,17 +4,32 @@ import numpy as np
 
 # To Use in main():
 
-class PipeInsulation:
-
+class Insulation:
+    def __init__(self, dictionaries):
+        insul_dict = dictionaries['Insul']
+        self.set_const(insul_dict)
+        
+    def set_const(self, dict):
+        for key, value in dict.items():
+            setattr(self, key, value)
+            
+    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
+        self.cost_peak = per_kw_peak_cost
+        self.cost_kwh = per_kwh_cost
+        self.cost_therm = per_therm_cost
+        self.cost_mmbtu = per_mmbtu_cost
+        self.uptime = uptime_factory
+        
+    def asDataFrame(self, results):
+        df = pd.DataFrame([results])
+        return df
     
+class PipeInsulation(Insulation):
+
     def __init__(self, pipe_data, pipe_dict, t_A):
         self.pipe_data = pipe_data
         self.t_A = t_A
         self.set_const(pipe_dict)
-
-    def set_const(self, dict):
-        for key, value in dict.items():
-            setattr(self, key, value)
 
     def insulation_calculator(self):
         pipe_data = self.pipe_data.copy()
@@ -90,10 +105,10 @@ class PipeInsulation:
         type = self.type  # Boiler could be Gas or Electric
         btu_per_hour_loss = var  # Reassign for readability
         if type == "Gas":  # If boiler is Gas
-            annual_btu_loss = btu_per_hour_loss * self.uptime  # Getting annual BTU los
+            annual_btu_loss = btu_per_hour_loss * self.uptime  # Getting annual BTU loss
             # Converting to MMBtu(generally it is billed)
             MMBtu_savings = (
-                annual_btu_loss * self.boiler_efficiency * 10 ** (-6)
+                annual_btu_loss / self.boiler_efficiency * 10 ** (-6)
             )  # Note the efficiency
 
             annual_cost_saving = MMBtu_savings * self.cost_therm  # Annual Savings
@@ -115,13 +130,13 @@ class PipeInsulation:
                 peak_reduction * self.uptime
             )  # Yearly Kwh Savings(Kwh) Note no efficiency
 
-            per_kw_savings = (
+            peak_savings = (
                 annual_peak_reduction * self.cost_peak
             )  # Yearly Peak Savings($)
-            peak_savings = (
+            kwh_savings = (
                 annual_kwh_reduction * self.cost_kwh
             )  # Yearly Kwh Savings($)
-            annual_cost_saving = per_kw_savings + peak_savings  # Annual Savings($)
+            annual_cost_saving = peak_savings + kwh_savings  # Annual Savings($)
 
             my_table = pd.DataFrame(
                 {  # Creating dataframe if Electric System
@@ -130,7 +145,7 @@ class PipeInsulation:
                     "Annual_Peak_Demand_Reduction": [round(annual_peak_reduction, 2)],
                     "Annual_KWh_Reduction": [round(annual_kwh_reduction, 2)],
                     "Cost_Savings_Peak": [round(peak_savings, 2)],
-                    "Cost_Savings_KWh": [round(per_kw_savings, 2)],
+                    "Cost_Savings_KWh": [round(kwh_savings, 2)],
                     "Annual_Cost_Savings": [round(annual_cost_saving, 2)],
                 }
             )
@@ -235,17 +250,6 @@ class PipeInsulation:
 
         return pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data
 
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
-        self.cost_peak = per_kw_peak_cost
-        self.cost_kwh = per_kwh_cost
-        self.cost_therm = per_therm_cost
-        self.cost_mmbtu = per_mmbtu_cost
-        self.uptime = uptime_factory
-    
-
-    def asDataFrame(self, results):
-        df = pd.DataFrame([results])
-        return df
     
     def process(self, dictionaries, costs):
         pipe_dict = dictionaries['Pipe']
@@ -256,3 +260,210 @@ class PipeInsulation:
         pipe_full = pd.concat([pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data], axis=1)
         
         return pipe_full
+
+class OvenDoorInsulation(Insulation):
+    
+    def __init__(self, door_data, door_dict, t_A):
+        self.door_data = door_data
+        self.t_A = t_A
+        self.set_const(door_dict)
+
+            
+    def calculator(self):
+        k_val_path = "../Data/K_values.csv"
+        k_values = pd.read_csv(k_val_path)
+        door_data = self.door_data.copy()
+        
+        for i in range(len(self.door_data)):
+            
+            t_p = door_data.loc[i, "Surface_Temp"]
+            door_length = door_data.loc[i, "Length (ft)"]
+            door_width = door_data.loc[i, "Width (ft)"]
+            door_thick = door_data.loc[i, "Thickness (ft)"]
+            door_count = door_data.loc[i, "Number of Doors"]
+            print(door_count)
+            dT = t_p - self.t_A
+            
+            k_door = k_values.loc[k_values["Material"] == door_data.loc[i, "Material"], "K_value"].values[0]
+
+            print(k_door)
+            
+            R_door = door_thick / k_door
+            door_data.loc[i, "R door"] = R_door
+            
+            R_in = self.thick_insul / self.K_insul
+            door_data.loc[i, "R insul"] = R_in
+            
+            U_non = 1 / (R_door + self.R_surface)
+            U_in = 1 / (R_door + R_in)
+            
+            door_data.loc[i, "U non"] = U_non
+            door_data.loc[i, "U in"] = U_in
+            
+            A_total = door_length * door_width * door_count
+            A_use = 2*door_thick * (door_length + door_width - 2*door_thick)
+            door_data.loc[i, "Area Total (ft^2)"] = A_total
+            door_data.loc[i, "Area Used (ft^2)"] = A_use
+            
+            q_non = dT * A_use * U_non
+            q_in = dT * A_use * U_in
+            q_diff = q_non - q_in
+            door_data.loc[i, "Q non"] = q_non
+            door_data.loc[i, "Q in"] = q_in
+            door_data.loc[i, "Q diff"] = q_diff
+            print("Q_diff: ", q_diff)
+            
+            
+        area_total = door_data["Area Total (ft^2)"].sum()
+        q_non_total = door_data["Q non"].sum()
+        q_in_total = door_data["Q in"].sum()
+        q_diff_total = door_data["Q diff"].sum()
+        print(q_diff_total)
+        print(q_non_total)
+        print(q_in_total)
+        
+        heat_table = pd.DataFrame({
+            "Heat Loss non-insul (BTU/hr)": [round(q_non_total,2)],
+            "Heat Loss insul (BTU/hr)": [round(q_in_total,2)],
+            "Heat Loss Diff. (BTU/hr)": [round(q_diff_total,2)]
+        })
+        
+        if self.type == 'Gas':
+            annual_btu = q_diff_total * self.uptime
+            MMbtu_savings = annual_btu / self.boiler_efficency * 10**(-6)
+            MMbtu_cost_save = MMbtu_savings * self.mmbtu_cost
+            
+            my_table = pd.DataFrame({
+                "Heat Loss (BTU/hr)": [q_diff_total],
+                "Heat Loss (BTU/year)": [annual_btu],
+                "Heat Loss (MMBTU/year)": [MMbtu_savings],
+                "MMBTU Cost Saving ($/yr)": [MMbtu_cost_save],
+            })
+            
+            savings_table = my_table
+            
+        elif self.type == 'Electric':
+            peak_reduce = q_diff_total / 3412
+            annual_peak_reduce = peak_reduce * 12
+            annual_kwh_reduce = peak_reduce * self.uptime
+            
+            peak_save = annual_peak_reduce * self.cost_peak
+            kwh_save = annual_kwh_reduce * self.cost_kwh
+            
+            total_savings = peak_save + kwh_save
+            
+            my_table = pd.DataFrame({
+                "Heat Loss (BTU/hr)": [q_diff_total],
+                "Peak Reduction (KW)": [peak_reduce],
+                "Annual Peak Reduction (KW/year)": [annual_peak_reduce],
+                "Annual KWh Reduction (KWh/year)": [annual_kwh_reduce],
+                "Peak Savings ($/year)": [peak_save],
+                "KWh Savings ($/year)": [kwh_save],
+                "Total Savings ($/year)": [total_savings]
+            })
+            
+            savings_table = my_table
+        
+        else:
+            savings_table = "Is system 'Gas' or 'Electric'"
+            
+        capital_cost = area_total * self.insul_cost
+        
+        labor_cost = capital_cost * self.labor_factor
+        
+        implment_cost = capital_cost + labor_cost
+        
+        spp = implment_cost / total_savings
+        spp_months = spp * 12
+        
+        cost_table = pd.DataFrame({
+            "Insulation Needed (ft^2)": [area_total],
+            "Capital Cost ($)": [capital_cost],
+            "Labor Cost ($)": [labor_cost],
+            "Implementation Cost ($)": [implment_cost],
+            "SPP (year)": [spp],
+            "SPP (months)": [spp_months]
+        })
+        
+        return door_data, heat_table, savings_table, cost_table
+
+    
+    def process(self, dictionaries, costs):
+        door_dict = dictionaries['Door']
+        t_A = dictionaries['FC']['t_A']
+        door_insulation = OvenDoorInsulation(self, door_dict, t_A)
+        door_insulation.set_costs(*costs)
+        door_data, heat_table, savings_table, cost_table = door_insulation.calculator()
+        door_full = pd.concat([door_data, heat_table, savings_table, cost_table], axis=1)
+        
+        return door_full
+    
+class TankInsulation(Insulation):
+    def __init__(self, tank_dict):
+        self.set_const(tank_dict)
+        
+        
+    def calculator(self):
+        tank_area = np.pi * self.tank_diameter * (self.tank_length + self.tank_diameter/2) * self.tank_count
+        
+        heat_loss = self.esf * tank_area
+        
+        if self.type == 'Gas':
+            annual_energy_save = heat_loss * self.uptime / self.boiler_efficiency * 10**(-6)
+            total_savings = annual_energy_save * self.cost_mmbtu
+            
+            savings_table = pd.DataFrame({
+                'Heat Loss (BTU/hr)': [round(heat_loss, 2)],
+                'Heat Loss Annual w/eff (MMBTU/year)': [round(annual_energy_save, 2)],
+                'Cost Savings ($/year)': [round(total_savings, 2)]
+            })
+            
+        elif self.type == 'Electric':
+            peak_reduce = heat_loss / 3412
+            annual_peak_save = peak_reduce * 12
+            annual_kwh_save = peak_reduce * self.uptime
+            
+            annual_peak_cost = annual_peak_save * self.cost_peak
+            annual_kwh_cost = annual_kwh_save * self.cost_kwh
+            total_savings = annual_peak_cost + annual_kwh_cost
+            
+            savings_table = pd.DataFrame({
+                'Heat Loss (BTU/hr)': [round(heat_loss, 2)],
+                'Peak Reduction (KW)': [round(peak_reduce, 2)],
+                'Annual Peak Reduction (KW/year)': [round(annual_peak_save, 2)],
+                'Annual KWh Reduction (KWh/year)': [round(annual_kwh_save, 2)],
+                'Annual Peak Savings ($/year)': [round(annual_peak_cost, 2)],
+                'Annual KWh Savings ($/year)': [round(annual_kwh_cost, 2)],
+                'Total Annual Savings ($/year)': [round(total_savings, 2)]
+            })
+            
+        else:
+            savings_table = "Is system 'Gas' or 'Electric'"
+            
+        capital_cost = self.insul_cost * tank_area
+        labor_cost = self.workers * self.man_hours * self.labor_cost
+        
+        implement_cost = capital_cost + labor_cost
+        
+        spp = implement_cost / total_savings
+        spp_months = spp * 12
+        
+        cost_table = pd.DataFrame({
+            'Capital Cost ($)': [round(capital_cost, 2)],
+            'Labor Cost ($)': [round(labor_cost, 2)],
+            'Implementation Cost ($)': [round(labor_cost, 2)],
+            'SPP (years)': [round(spp, 2)],
+            'SPP (months)': [round(spp_months, 2)]
+        })
+        
+        return savings_table, cost_table
+    
+
+    def process(dictionaries, costs):
+        tank_insulation = TankInsulation(dictionaries['Tank'])
+        tank_insulation.set_costs(*costs)
+        savings_table, cost_table = tank_insulation.calculator()
+        tank_full = pd.concat([savings_table, cost_table], axis=1)
+        
+        return tank_full
+    
