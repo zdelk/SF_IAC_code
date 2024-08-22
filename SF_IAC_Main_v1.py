@@ -13,7 +13,7 @@ from KSU_IAC_Functions import *
 # Input and Output Paths
 input_path = "../Data/test_input.xlsx"
 input_text = "../Data/NBtest2.txt"
-output_path = "../Data/test_output_10.xlsx" # Set to not overwrite
+output_path = "../Data/test_output_12.xlsx" # Set to not overwrite
 
 # Main Function
 
@@ -44,7 +44,10 @@ def main(input_path, input_text, output_path):
         'Occupancy': ('Replace_Lights', 'OccupancySensor'),
         'Daylight': ('Replace_Lights', 'DaylightSensor'),
         'VSD': ('VSD_replacement', 'VSDreplace'),
-        'Micro': ('Microturbine_CHP', 'Microturbine')
+        'Micro': ('Microturbine_CHP', 'Microturbine'),
+        'Ratio': ('Boiler', 'AirFuelRatio'),
+        'SteamLeak': ('Boiler', 'RepairSteamLeaks'),
+        'Belts': ('Boiler', 'EfficientBelts')
     }
 
     
