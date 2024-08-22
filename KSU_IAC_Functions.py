@@ -77,40 +77,64 @@ def dynamic_import(module_name, class_name):
     module = importlib.import_module(module_name)
     return getattr(module, class_name)
     
-# Need to decide if function is neccesarry
-def full_analysis(input_workbook, section_names):
+# # Need to decide if function is neccesarry
+# def full_analysis(input_workbook, section_names):
     
-    sheet_list = list(input_workbook.keys())
+#     sheet_list = list(input_workbook.keys())
     
-    for name in section_names:
-        sheet_name = next((title for title in sheet_list if re.search(name + r".*", title)), None)
+#     for name in section_names:
+#         sheet_name = next((title for title in sheet_list if re.search(name + r".*", title)), None)
         
-        try:
-            module_name, class_name = section_to_class_map[name]
-        except KeyError as e:
-            print(f"{name} has no associated class: {e}")
-            continue
+#         try:
+#             module_name, class_name = section_to_class_map[name]
+#         except KeyError as e:
+#             print(f"{name} has no associated class: {e}")
+#             continue
         
-        if class_name is None:
-            print(f"No class found for section: {name}")
-            continue
+#         if class_name is None:
+#             print(f"No class found for section: {name}")
+#             continue
         
-        try:
-            cls = dynamic_import(module_name, class_name)
-        except ImportError as e:
-            print(f"Error importing class {class_name} from {module_name}: {e}")
-            continue
+#         try:
+#             cls = dynamic_import(module_name, class_name)
+#         except ImportError as e:
+#             print(f"Error importing class {class_name} from {module_name}: {e}")
+#             continue
         
-        print(f"Processing section: {name}")
-        print(f"Class name: {class_name}")
-        print(f"Sheet name: {sheet_name}")
+#         print(f"Processing section: {name}")
+#         print(f"Class name: {class_name}")
+#         print(f"Sheet name: {sheet_name}")
         
-        if sheet_name:
-            print(f'{name} has a sheet in the workbook')
-            output = cls.process(input_workbook[sheet_name], dictionaries, costs)
-        else:
-            print(f'{name} does not have a sheet in the workbook')
-            output = cls.process(dictionaries, costs)
+#         if sheet_name:
+#             print(f'{name} has a sheet in the workbook')
+#             output = cls.process(input_workbook[sheet_name], dictionaries, costs)
+#         else:
+#             print(f'{name} does not have a sheet in the workbook')
+#             output = cls.process(dictionaries, costs)
             
-            print_dict[class_name] = output
-        return print_dict
+#             print_dict[class_name] = output
+#         return print_dict
+
+class SFIACGeneral:
+    def __init__(self, dict):
+        self.set_const(dict)
+        
+    
+    def set_const(self, dict):
+        for key, value in dict.items():
+            setattr(self, key, value)
+        
+
+    def set_costs(
+        self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory
+    ):
+        self.cost_peak = per_kw_peak_cost
+        self.cost_kwh = per_kwh_cost
+        self.cost_therm = per_therm_cost
+        self.cost_mmbtu = per_mmbtu_cost
+        self.uptime = uptime_factory
+
+    def asDataFrame(self, results):
+        df = pd.DataFrame([results])
+        return df
+    
