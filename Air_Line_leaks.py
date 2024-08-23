@@ -2,15 +2,12 @@
 # Class for Air Leaks
 import numpy as np
 import pandas as pd
+from KSU_IAC_Functions import SFIACGeneral
 
-class AirLeak:
+class AirLeak(SFIACGeneral):
     def __init__(self, AirLeak_dict, t_A):
         self.set_const(AirLeak_dict)
         self.t_A = t_A
-        
-    def set_const(self, dict):
-        for key, value in dict.items():
-            setattr(self, key, value)
             
     def air_leak_calculation(self):
         # Unpacking a short variables for Readabiliy
@@ -60,18 +57,6 @@ class AirLeak:
         }
         return results
     
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
-        self.cost_peak = per_kw_peak_cost
-        self.cost_kwh = per_kwh_cost
-        self.cost_therm = per_therm_cost
-        self.cost_mmbtu = per_mmbtu_cost
-        self.uptime = uptime_factory
-    
-    def asDataFrame(self, results):
-        df = pd.DataFrame([results])
-        
-        return df
-    
     def process( dictionaries, costs):
         al_dict = dictionaries['AirLeak']
         t_A = dictionaries['FC']['t_A']
@@ -81,3 +66,82 @@ class AirLeak:
         air_leak_final = air_leaks.asDataFrame(air_leak_results)
         
         return air_leak_final
+    
+class ReduceAirPressure(SFIACGeneral):
+    def __init__(self, dict):
+        self.set_const(dict)
+        
+    def calculator(self):
+        psi_reduced = self.psi_current - self.psi_reduce
+        
+        n_exp = (self.n - 1) / self.n
+        
+        eq_top = (psi_reduced / self.psi_input) ** (n_exp) - 1
+        eq_bot = (self.psi_current / self.psi_input) ** (n_exp) - 1
+        
+        f_reduce = 1 - (eq_top / eq_bot)
+        
+        kw_comp = self.hp_comp * self.count_comp * self.hp_to_kw
+        
+        kw_reduce = f_reduce * kw_comp * self.load_percent * self.uptime
+
+        cost_save = kw_reduce * self.cost_kwh
+        
+        implement_cost = self.cost_labor * self.hours_labor
+        
+        spp = implement_cost / cost_save
+        spp_months = spp * 12
+        
+        output = {
+            'Saving Factor': f_reduce,
+            'Compressor Draw (KW)': kw_comp,
+            'Energy Savings (KWh/year)': kw_reduce,
+            'Cost Savings ($/year)': cost_save,
+            'Implementation Cost ($)': implement_cost,
+            'SPP (years)': spp,
+            'SPP (months)': spp_months
+        }
+        
+        return output
+    
+    def process(dict, costs):
+        reduce_dict = dict['ReduceAir']
+        reduce_obj = ReduceAirPressure(reduce_dict)
+        reduce_obj.set_costs(*costs)
+        reduce_out = reduce_obj.calculator()
+        reduce_final = reduce_obj.asDataFrame(reduce_out)
+        
+        return reduce_final
+    
+class TurnOffCompressor(SFIACGeneral):
+    def __init__(self, dict):
+        self.set_const(dict)
+        
+    def calculator(self):
+        peak_save = self.hp_comp * self.hp_to_kw * self.unload_comp
+        
+        if self.off_completely == True:
+            kwh_save = peak_save * self.uptime
+
+        else:
+            idle_hours = self.off_hours_per_week * 52
+            kwh_save = peak_save * idle_hours
+            
+        kwh_cost = kwh_save * self.cost_kwh
+        
+        output = {
+            'Peak Reduction (KW)': peak_save,
+            'KWh Reduction (KW/year)': kwh_save,
+            'Cost Savings ($/year)': kwh_cost,
+        }
+        
+        return output
+    
+    def process(dict, costs):
+        off_dict = dict['OffComp']
+        off_obj = TurnOffCompressor(off_dict)
+        off_obj.set_costs(*costs)
+        off_table = off_obj.calculator()
+        off_final = off_obj.asDataFrame(off_table)
+        
+        return off_final
