@@ -152,3 +152,103 @@ class EfficientBelts(SFIACGeneral):
         belts_final = belts_out.calculator()
         
         return belts_final
+    
+class IsolateHotCold(SFIACGeneral):
+    def __init__(self, dict):
+        self.set_const(dict)
+        
+    def calculator(self):
+        load_hours = self.load_percent * self.uptime
+        unload_hours = 8760 - load_hours
+        
+        bhp = self.count_comp * self.hp_comp * self.conv_bhp
+        
+        load_heat = self.heat_percent * bhp * self.conv_factor * (self.cooling_months / 12) * load_hours
+        unload_heat = self.heat_percent * self.unload_draw * bhp * self.conv_factor * (self.cooling_months / 12) * unload_hours
+        
+        total_heat = load_heat + unload_heat
+        
+        total_energy = (total_heat / self.eer_hvac) / 1000
+        
+        cost_save = total_energy * self.cost_kwh
+
+        implement_cost = self.count_comp * (self.cost_takeoff + self.cost_odsensor + (self.cost_duct * self.ft_duct))
+        
+        spp = implement_cost / cost_save
+        spp_months = spp * 12
+        
+        output = {
+            'Load Hours (hr/year)': load_hours,
+            'Unload Hours (hr/year)': unload_hours,
+            'Total bhp': bhp,
+            'Heat Gen:Load (Btu/year)': load_heat,
+            'Heat Gen:Unload (Btu/year)': unload_heat,
+            'Heat Gen:Total (Btu/year)': total_heat,
+            'Energy Savings (KWh/year)': total_energy,
+            'Annual Cost Savings ($/year)': cost_save,
+            'Implementation Cost ($)': implement_cost,
+            'SPP (years)': spp,
+            'SPP (months)': spp_months
+        }
+        
+        return output
+    
+    def process(dict, costs):
+        isolate_dict = dict['Isolate']
+        isolate = IsolateHotCold(isolate_dict)
+        isolate.set_costs(*costs)
+        isolate_out = isolate.calculator()
+        isolate_final = isolate.asDataFrame(isolate_out)
+        
+        return isolate_final
+    
+    
+class ReplaceAirFilter(SFIACGeneral):
+    def __init__(self, dict):
+        self.set_const(dict)
+        
+    def calculator(self):
+        peak_reduce = self.count_units * self.avg_hp * self.hp_to_kw * self.load_reduce
+        use_time = (self.months_per_year / 12) * self.uptime
+
+        kwh_reduce = peak_reduce * use_time
+        
+        peak_save = peak_reduce * self.cost_peak * self.months_per_year
+        kwh_save = kwh_reduce * self.cost_kwh
+
+        total_save = peak_save + kwh_save
+        
+        filter_count = self.count_units * self.filter_per_unit
+        capital_cost =  filter_count * self.cost_filter
+        labor_cost = self.man_hours * self.cost_labor
+        
+        total_cost = capital_cost + labor_cost
+        
+        spp = total_cost / total_save
+        spp_month = spp * 12
+        
+        output = {
+            'Filters needed': filter_count,
+            'Use hours (hrs/year)': use_time,
+            'Peak Reduction (KW)': peak_reduce,
+            'KWh Reduction (KWh/year)': kwh_save,
+            'Peak Savings ($/year)': peak_save,
+            'KWh Savings ($/year)': kwh_save,
+            'Total Savings ($/year)': total_save,
+            'Capital Cost ($)': capital_cost,
+            'Labor Cost ($)': labor_cost,
+            'Total Cost ($)': total_cost,
+            'SPP (years)': spp,
+            'SPP (months)': spp_month
+        }
+        
+        return output
+    
+    def process(dict, costs):
+        filter_dict = dict['AirFilter']
+        filter_obj = ReplaceAirFilter(filter_dict)
+        filter_obj.set_costs(*costs)
+        filter_out = filter_obj.calculator()
+        filter_final = filter_obj.asDataFrame(filter_out)
+        
+        return filter_final
