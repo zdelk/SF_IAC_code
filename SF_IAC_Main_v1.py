@@ -13,7 +13,7 @@ from KSU_IAC_Functions import *
 # Input and Output Paths
 input_path = "../Data/test_input.xlsx"
 input_text = "../Data/NBtest2.txt"
-output_path = "../Data/test_output_13.xlsx" # Set to not overwrite
+output_path = "../Data/test_output_14.xlsx" # Set to not overwrite
 
 # Main Function
 
@@ -23,7 +23,7 @@ def main(input_path, input_text, output_path):
     input_workbook = pd.read_excel(input_path, engine="openpyxl", sheet_name=None)
     
     dictionaries, section_names = dictionary_2(input_text)
-    print(dictionaries)
+    # print(dictionaries)
     uptime_factory = dictionaries['FC']['uptime_factory']
     # Bill Analysis
     # !!!!!Always first!!!!!
@@ -51,11 +51,14 @@ def main(input_path, input_text, output_path):
         'Isolate':('Boiler', 'IsolateHotCold'),
         'ReduceAir':('Air_Line_leaks', 'ReduceAirPressure'),
         'OffComp': ('Air_Line_leaks', 'TurnOffCompressor'),
-        'AirFilter':('Boiler', 'ReplaceAirFilter')
+        'AirFilter':('Boiler', 'ReplaceAirFilter'),
+        'NEMA': ('Boiler', 'ReplaceElectricMotors'),
+        'HVAC': ('Boiler', 'ReplaceHvacUnits')
     }
 
     
     sheet_list = list(input_workbook.keys())
+    print(sheet_list)
     
     for name in section_names:
         sheet_name = next((title for title in sheet_list if re.search(name + r".*", title)), None)
