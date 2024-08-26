@@ -252,3 +252,139 @@ class ReplaceAirFilter(SFIACGeneral):
         filter_final = filter_obj.asDataFrame(filter_out)
         
         return filter_final
+    
+class ReplaceElectricMotors(SFIACGeneral):
+    def __init__(self, df, dict):
+        self.df = df
+        self.set_const(dict)
+        
+    def calculator(self):
+        motor_data = self.df.copy()
+        use_hours = self.percent_uptime * self.uptime
+        
+        for i in range(len(motor_data)):
+            # Energy Savings Portion
+            if motor_data.loc[i,'Rewound'] == True:
+                motor_data.loc[i,'Efficiency Current (%)'] = motor_data.loc[i,'Efficiency Current (%)'] - self.rewind_reduce
+            else:
+                continue
+            
+            eff_part = (100 / motor_data.loc[i, 'Efficiency Current (%)']) - (100 / motor_data.loc[i, 'Efficiency Nema (%)'])
+            motor_data.loc[i, 'Efficency Part'] = eff_part
+            
+            hp_eff = motor_data.loc[i, 'Number of Motors'] * motor_data.loc[i, 'Motor Hp'] * eff_part
+            motor_data.loc[i, 'HP Part'] = hp_eff
+            
+            peak_reduce_indv = hp_eff * self.hp_to_kw * self.load_percent
+            motor_data.loc[i, 'KW Reduction (KW)'] = peak_reduce_indv
+            
+            # Cost Portion
+            labor_cost_indv = self.labor_cost * motor_data.loc[i, 'Number of Motors'] * (motor_data.loc[i, 'Labor for Install (hrs)'] +
+                                                                                         motor_data.loc[i, 'Labor for Hookup (hrs)'])
+            motor_data.loc[i, 'Labor Cost ($)'] = labor_cost_indv
+            
+            capital_cost_idv = motor_data.loc[i, 'Number of Motors'] * motor_data.loc[i, 'Motor Cost ($)']
+            motor_data.loc[i, 'Capital Cost ($)'] = capital_cost_idv 
+            
+        peak_reduce = motor_data['KW Reduction (KW)'].sum()
+        kwh_reduce = peak_reduce * use_hours
+        
+        peak_save = peak_reduce * self.cost_peak * 12
+        kwh_save = kwh_reduce * self.cost_kwh
+        
+        total_save = peak_save + kwh_save
+        
+        labor_cost = motor_data['Labor Cost ($)'].sum()
+        capital_cost = motor_data['Capital Cost ($)'].sum()
+        implement_cost = labor_cost + capital_cost
+        
+        spp = implement_cost / total_save
+        spp_months = spp * 12
+        
+        output = {
+            'Peak Reduction (KW)': peak_reduce,
+            'KWh Reduciton (KWh/year)': kwh_reduce,
+            'Peak Savings ($/year)': peak_save,
+            'KWh Savings ($/year)': kwh_save,
+            'Total Savings ($/year)': total_save,
+            'Total Labor Cost ($)': labor_cost,
+            'Total Capital Cost ($)': capital_cost,
+            'Total Implementation Cost ($)': implement_cost,
+            'SPP (years)': spp,
+            'SPP (months)': spp_months
+        }
+        
+        return motor_data, output
+    
+    def process(self, dict, costs):
+        nema_dict = dict['NEMA']
+        nema_obj = ReplaceElectricMotors(self, nema_dict)
+        nema_obj.set_costs(*costs)
+        nema_data, nema_out = nema_obj.calculator()
+        nema_out_df = nema_obj.asDataFrame(nema_out)
+        nema_final = pd.concat([nema_data, nema_out_df], axis=1)
+        return nema_final
+        
+class ReplaceHvacUnits(SFIACGeneral):
+    def __init__(self, df, dict):
+        self.hvac_data = df
+        self.set_const(dict)
+        
+    def calculator(self):
+        hvac_data = self.hvac_data.copy()
+        use_hours = self.uptime * (self.cooling_months / 12)
+        
+        for i in range(len(hvac_data)):
+            eer_comp = (1 / hvac_data.loc[i, 'EER Pre']) - (1 / hvac_data.loc[i, 'EER Post'])
+            capacity_idv = self.ton_to_btu * hvac_data.loc[i, 'Tonnage']
+            hvac_data.loc[i, 'Capacity (btu/hr)'] = capacity_idv
+            peak_reduce_idv = capacity_idv * eer_comp / 1000
+            kwh_reduce_idv = peak_reduce_idv * use_hours
+            hvac_data.loc[i, 'Peak Reduction (KW)'] = peak_reduce_idv
+            hvac_data.loc[i, 'Kwh Reduction (KWh/year)'] = kwh_reduce_idv
+            
+            labor_cost_idv = hvac_data.loc[i, 'Unit Cost OP ($)'] - hvac_data.loc[i, 'Unit Cost ($)']
+            hvac_data.loc[i, 'Unit Cost:adj for Inflation'] = hvac_data.loc[i, 'Unit Cost ($)'] * self.inflation_rate
+            hvac_data.loc[i, 'Labor Cost:adj for Inflation'] = labor_cost_idv * self.inflation_rate
+            
+        peak_reduce = hvac_data['Peak Reduction (KW)'].sum()
+        kwh_reduce = hvac_data['Kwh Reduction (KWh/year)'].sum()
+        
+        peak_save = peak_reduce * self.cost_peak * self.cooling_months
+        kwh_save = kwh_reduce * self.cost_kwh
+        
+        total_save = peak_save + kwh_save
+
+        capital_cost = hvac_data['Unit Cost:adj for Inflation'].sum()
+        labor_cost = hvac_data['Labor Cost:adj for Inflation'].sum()
+        
+        total_cost = capital_cost + labor_cost
+        
+        spp = total_cost / total_save
+        spp_months = spp * 12
+        
+        output = {
+            'Peak Reduction (KW)': peak_reduce,
+            'KWh Reduction (KWh/year)': kwh_reduce,
+            'Peak Savings ($/year)': peak_save,
+            'KWh Savings ($/year)': kwh_save,
+            'Total Savings ($/year)': total_save,
+            'Capital Cost ($)': capital_cost,
+            'Labor Cost ($)': labor_cost,
+            'Total Cost ($)': total_cost,
+            'SPP (years)': spp,
+            'SPP (months)': spp_months
+        }
+        
+        return output, hvac_data
+    
+    def process(self, dict, costs):
+        hvac_dict = dict['HVAC']
+        hvac_obj = ReplaceHvacUnits(self, hvac_dict)
+        hvac_obj.set_costs(*costs)
+        hvac_out, hvac_data = hvac_obj.calculator()
+        hvac_df = hvac_obj.asDataFrame(hvac_out)
+        hvac_final = pd.concat([hvac_data, hvac_df], axis = 1)
+        
+        return hvac_final
+            
