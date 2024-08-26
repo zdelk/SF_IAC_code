@@ -281,12 +281,12 @@ class OvenDoorInsulation(Insulation):
             door_width = door_data.loc[i, "Width (ft)"]
             door_thick = door_data.loc[i, "Thickness (ft)"]
             door_count = door_data.loc[i, "Number of Doors"]
-            print(door_count)
+            # print(door_count)
             dT = t_p - self.t_A
             
             k_door = k_values.loc[k_values["Material"] == door_data.loc[i, "Material"], "K_value"].values[0]
 
-            print(k_door)
+            # print(k_door)
             
             R_door = door_thick / k_door
             door_data.loc[i, "R door"] = R_door
@@ -311,16 +311,16 @@ class OvenDoorInsulation(Insulation):
             door_data.loc[i, "Q non"] = q_non
             door_data.loc[i, "Q in"] = q_in
             door_data.loc[i, "Q diff"] = q_diff
-            print("Q_diff: ", q_diff)
+            # print("Q_diff: ", q_diff)
             
             
         area_total = door_data["Area Total (ft^2)"].sum()
         q_non_total = door_data["Q non"].sum()
         q_in_total = door_data["Q in"].sum()
         q_diff_total = door_data["Q diff"].sum()
-        print(q_diff_total)
-        print(q_non_total)
-        print(q_in_total)
+        # print(q_diff_total)
+        # print(q_non_total)
+        # print(q_in_total)
         
         heat_table = pd.DataFrame({
             "Heat Loss non-insul (BTU/hr)": [round(q_non_total,2)],
