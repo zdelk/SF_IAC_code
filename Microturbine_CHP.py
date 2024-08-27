@@ -31,7 +31,7 @@ class Microturbine(SFIACGeneral):
         # else:
         #     annual_gas_cost = self.cost_per_therm * annual_extra_gas * 10
         ###
-        annual_gas_cost = self.cost_mmbtu * annual_extra_gas * 10
+        annual_gas_cost = self.cost_mmbtu * annual_extra_gas 
         ###
         annual_maintenance = self.mt_count * self.maint_cost
         
