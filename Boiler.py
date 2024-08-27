@@ -39,9 +39,8 @@ class AirFuelRatio(SFIACGeneral):
 
         return output
 
-    def process(dictionaries, costs):
-        ratio_dict = dictionaries["Ratio"]
-        air_fuel_ratio = AirFuelRatio(ratio_dict)
+    def process(dict, costs):
+        air_fuel_ratio = AirFuelRatio(dict)
         air_fuel_ratio.set_costs(*costs)
         afr_final = air_fuel_ratio.calculator()
 
@@ -99,9 +98,8 @@ class RepairSteamLeaks(SFIACGeneral):
         
         return leak_data, output
     
-    def process(self, dictionaries, costs):
-        steam_leak_dict = dictionaries['SteamLeak']
-        steam_leak = RepairSteamLeaks(self, steam_leak_dict)
+    def process(self, dict, costs):
+        steam_leak = RepairSteamLeaks(self, dict)
         steam_leak.set_costs(*costs)
         leak_data, cost_data = steam_leak.calculator()
         steam_leak_full = pd.concat([leak_data, cost_data], axis=1)
@@ -145,9 +143,8 @@ class EfficientBelts(SFIACGeneral):
         
         return output
     
-    def process(dictionaries, costs):
-        belts_dict = dictionaries['Belts']
-        belts_out = EfficientBelts(belts_dict)
+    def process(dict, costs):
+        belts_out = EfficientBelts(dict)
         belts_out.set_costs(*costs)
         belts_final = belts_out.calculator()
         
@@ -194,8 +191,7 @@ class IsolateHotCold(SFIACGeneral):
         return output
     
     def process(dict, costs):
-        isolate_dict = dict['Isolate']
-        isolate = IsolateHotCold(isolate_dict)
+        isolate = IsolateHotCold(dict)
         isolate.set_costs(*costs)
         isolate_out = isolate.calculator()
         isolate_final = isolate.asDataFrame(isolate_out)
@@ -245,8 +241,7 @@ class ReplaceAirFilter(SFIACGeneral):
         return output
     
     def process(dict, costs):
-        filter_dict = dict['AirFilter']
-        filter_obj = ReplaceAirFilter(filter_dict)
+        filter_obj = ReplaceAirFilter(dict)
         filter_obj.set_costs(*costs)
         filter_out = filter_obj.calculator()
         filter_final = filter_obj.asDataFrame(filter_out)
@@ -317,8 +312,7 @@ class ReplaceElectricMotors(SFIACGeneral):
         return motor_data, output
     
     def process(self, dict, costs):
-        nema_dict = dict['NEMA']
-        nema_obj = ReplaceElectricMotors(self, nema_dict)
+        nema_obj = ReplaceElectricMotors(self, dict)
         nema_obj.set_costs(*costs)
         nema_data, nema_out = nema_obj.calculator()
         nema_out_df = nema_obj.asDataFrame(nema_out)
@@ -379,8 +373,7 @@ class ReplaceHvacUnits(SFIACGeneral):
         return output, hvac_data
     
     def process(self, dict, costs):
-        hvac_dict = dict['HVAC']
-        hvac_obj = ReplaceHvacUnits(self, hvac_dict)
+        hvac_obj = ReplaceHvacUnits(self, dict)
         hvac_obj.set_costs(*costs)
         hvac_out, hvac_data = hvac_obj.calculator()
         hvac_df = hvac_obj.asDataFrame(hvac_out)

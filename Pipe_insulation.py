@@ -1,6 +1,7 @@
 # 7/26/24 works as expected
 import pandas as pd
 import numpy as np
+from KSU_IAC_Functions import SFIACGeneral
 
 # To Use in main():
 
@@ -24,11 +25,10 @@ class Insulation:
         df = pd.DataFrame([results])
         return df
     
-class PipeInsulation(Insulation):
+class PipeInsulation(SFIACGeneral):
 
-    def __init__(self, pipe_data, pipe_dict, t_A):
+    def __init__(self, pipe_data, pipe_dict):
         self.pipe_data = pipe_data
-        self.t_A = t_A
         self.set_const(pipe_dict)
 
     def insulation_calculator(self):
@@ -52,10 +52,8 @@ class PipeInsulation(Insulation):
                 length_pipe = float(pipe_data.loc[i, "Length_ft"])
 
             # Pulling K_val for the specific material from the k_value CSV file
-            k_val = k_values.loc[
-                k_values["Material"] == pipe_data.loc[i, "Material"], "K_value"
-            ].values[0]
-
+            k_val = k_values.loc[k_values["Material"] == pipe_data.loc[i, "Material"], "K_value"].values[0]
+            
             r_out = d_out / 2  # Radius of pipe
             dT = t_p - self.t_A  # Delta T (Temperature Difference)
 
@@ -111,7 +109,7 @@ class PipeInsulation(Insulation):
                 annual_btu_loss / self.boiler_efficiency * 10 ** (-6)
             )  # Note the efficiency
 
-            annual_cost_saving = MMBtu_savings * self.cost_therm  # Annual Savings
+            annual_cost_saving = MMBtu_savings * self.cost_mmbtu  # Annual Savings
 
             my_table = pd.DataFrame(
                 {  # Creating data frame if Gas system
@@ -203,9 +201,7 @@ class PipeInsulation(Insulation):
     def pipe_final(self):
         # Running initial Calculator function
         pipe_data = self.pipe_data.copy()
-        pipe_calculations = round(
-            self.insulation_calculator(), 2
-        )  # Running Data through pipe calculator from KSU_IAC_functions
+        pipe_calculations = round(self.insulation_calculator(), 2)  # Running Data through pipe calculator from KSU_IAC_functions
 
         # Creating list of columns for the output table
         pipe_table_cols = [
@@ -251,21 +247,18 @@ class PipeInsulation(Insulation):
         return pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data
 
     
-    def process(self, dictionaries, costs):
-        pipe_dict = dictionaries['Pipe']
-        t_A = dictionaries['FC']['t_A']
-        pipe_insulation = PipeInsulation(self, pipe_dict, t_A)
+    def process(self, dict, costs):
+        pipe_insulation = PipeInsulation(self, dict)
         pipe_insulation.set_costs(*costs)
         pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data = pipe_insulation.pipe_final()
         pipe_full = pd.concat([pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data], axis=1)
         
         return pipe_full
 
-class OvenDoorInsulation(Insulation):
+class OvenDoorInsulation(SFIACGeneral):
     
-    def __init__(self, door_data, door_dict, t_A):
+    def __init__(self, door_data, door_dict):
         self.door_data = door_data
-        self.t_A = t_A
         self.set_const(door_dict)
 
             
@@ -388,10 +381,8 @@ class OvenDoorInsulation(Insulation):
         return door_data, heat_table, savings_table, cost_table
 
     
-    def process(self, dictionaries, costs):
-        door_dict = dictionaries['Door']
-        t_A = dictionaries['FC']['t_A']
-        door_insulation = OvenDoorInsulation(self, door_dict, t_A)
+    def process(self, dict, costs):
+        door_insulation = OvenDoorInsulation(self, dict)
         door_insulation.set_costs(*costs)
         door_data, heat_table, savings_table, cost_table = door_insulation.calculator()
         door_full = pd.concat([door_data, heat_table, savings_table, cost_table], axis=1)

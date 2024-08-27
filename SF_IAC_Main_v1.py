@@ -11,9 +11,9 @@ from KSU_IAC_Functions import *
 
 # --------------------------------------------------------------------------#
 # Input and Output Paths
-input_path = "../Data/test_input.xlsx"
-input_text = "../Data/NBtest2.txt"
-output_path = "../Data/test_output_14.xlsx" # Set to not overwrite
+input_path = "../Data/WS_input.xlsx"
+input_text = "../Data/KS2434_WS.txt"
+output_path = "../Data/WS_out_v1.xlsx" # Set to not overwrite
 
 # Main Function
 
@@ -25,6 +25,7 @@ def main(input_path, input_text, output_path):
     dictionaries, section_names = dictionary_2(input_text)
     # print(dictionaries)
     uptime_factory = dictionaries['FC']['uptime_factory']
+    t_A = dictionaries['FC']['t_A']
     # Bill Analysis
     # !!!!!Always first!!!!!
     ub_sheet = input_workbook["Utility Bills"]
@@ -33,11 +34,12 @@ def main(input_path, input_text, output_path):
     
     print_dict['Utility Bills'] = combined_bill_data
     
-    costs = (per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory)
+    costs = (per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory, t_A)
     
     section_to_class_map = {
         'AirLeak': ('Air_Line_leaks', 'AirLeak'),
-        'Pipe': ('Pipe_insulation', 'PipeInsulation'),
+        'SteamPipe': ('Pipe_insulation', 'PipeInsulation'),
+        'CondensatePipe': ('Pipe_insulation', 'PipeInsulation'),
         'Door': ('Pipe_insulation', 'OvenDoorInsulation'),
         'Tank':('Pipe_insulation', 'TankInsulation'),
         'LED': ('Replace_Lights', 'LEDReplacement'),
@@ -85,10 +87,10 @@ def main(input_path, input_text, output_path):
         
         if sheet_name:
             print(f'{name} has a sheet in the workbook')
-            output = cls.process(input_workbook[sheet_name], dictionaries, costs)
+            output = cls.process(input_workbook[sheet_name], dictionaries[name], costs)
         else:
             print(f'{name} does not have a sheet in the workbook')
-            output = cls.process(dictionaries, costs)
+            output = cls.process(dictionaries[name], costs)
         
         
         print_dict[class_name] = output

@@ -1,13 +1,12 @@
 import numpy as np
 import pandas as pd
+from KSU_IAC_Functions import SFIACGeneral
 
-class Microturbine:
+
+class Microturbine(SFIACGeneral):
     def __init__(self, dict):
         self.set_const(dict)
         
-    def set_const(self, dict):
-        for key, value in dict.items():
-            setattr(self, key, value)
             
     def microturbine_calc(self):
         chp_input = self.mt_power / self.energy_eff * 3412
@@ -32,7 +31,7 @@ class Microturbine:
         # else:
         #     annual_gas_cost = self.cost_per_therm * annual_extra_gas * 10
         ###
-        annual_gas_cost = self.cost_therm * annual_extra_gas * 10
+        annual_gas_cost = self.cost_mmbtu * annual_extra_gas * 10
         ###
         annual_maintenance = self.mt_count * self.maint_cost
         
@@ -67,20 +66,8 @@ class Microturbine:
         return results
     
 
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
-        self.cost_peak = per_kw_peak_cost
-        self.cost_kwh = per_kwh_cost
-        self.cost_therm = per_therm_cost
-        self.cost_mmbtu = per_mmbtu_cost
-        self.uptime = uptime_factory
-    
-    def asDataFrame(self, results):
-        df = pd.DataFrame([results])
-        return df
-    
-
-    def process(dictionaries, costs):
-        microturbine_chp = Microturbine(dictionaries['Micro'])
+    def process(dict, costs):
+        microturbine_chp = Microturbine(dict)
         microturbine_chp.set_costs(*costs)
         microturbine_results = microturbine_chp.microturbine_calc()
         microturbine_final = microturbine_chp.asDataFrame(microturbine_results)

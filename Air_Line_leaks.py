@@ -5,9 +5,8 @@ import pandas as pd
 from KSU_IAC_Functions import SFIACGeneral
 
 class AirLeak(SFIACGeneral):
-    def __init__(self, AirLeak_dict, t_A):
+    def __init__(self, AirLeak_dict):
         self.set_const(AirLeak_dict)
-        self.t_A = t_A
             
     def air_leak_calculation(self):
         # Unpacking a short variables for Readabiliy
@@ -57,10 +56,8 @@ class AirLeak(SFIACGeneral):
         }
         return results
     
-    def process( dictionaries, costs):
-        al_dict = dictionaries['AirLeak']
-        t_A = dictionaries['FC']['t_A']
-        air_leaks = AirLeak(al_dict, t_A)
+    def process( dict, costs):
+        air_leaks = AirLeak(dict)
         air_leaks.set_costs(*costs)
         air_leak_results = air_leaks.air_leak_calculation()
         air_leak_final = air_leaks.asDataFrame(air_leak_results)
@@ -105,8 +102,7 @@ class ReduceAirPressure(SFIACGeneral):
         return output
     
     def process(dict, costs):
-        reduce_dict = dict['ReduceAir']
-        reduce_obj = ReduceAirPressure(reduce_dict)
+        reduce_obj = ReduceAirPressure(dict)
         reduce_obj.set_costs(*costs)
         reduce_out = reduce_obj.calculator()
         reduce_final = reduce_obj.asDataFrame(reduce_out)
@@ -138,8 +134,7 @@ class TurnOffCompressor(SFIACGeneral):
         return output
     
     def process(dict, costs):
-        off_dict = dict['OffComp']
-        off_obj = TurnOffCompressor(off_dict)
+        off_obj = TurnOffCompressor(dict)
         off_obj.set_costs(*costs)
         off_table = off_obj.calculator()
         off_final = off_obj.asDataFrame(off_table)

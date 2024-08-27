@@ -2,7 +2,7 @@
 # Compressor Replacement
 import numpy as np
 import pandas as pd
-
+from KSU_IAC_Functions import SFIACGeneral
 # # How to use in Main():
 #     vsd_sheet = input_workbook['VSD Replacement']
 #     vsd_df = vsd_sheet.set_index(vsd_sheet.columns[0])
@@ -15,7 +15,7 @@ import pandas as pd
 #     print(vsd_final)
 
 
-class VSDreplace:
+class VSDreplace(SFIACGeneral):
     def __init__(self, df, dict):
         self.data = df
         self.set_const(dict)
@@ -24,9 +24,6 @@ class VSDreplace:
         self.pre_values = self.data.loc["Pre"]
         self.post_values = self.data.loc["Post"]
     
-    def set_const(self, dict):
-        for key, value in dict.items():
-            setattr(self, key, value)
         
 
     def VSDcalc(self):
@@ -55,7 +52,7 @@ class VSDreplace:
         annual_kw_savings = peak_kw_savings * self.uptime / 2
 
         peak_cost_savings = peak_kw_savings * self.cost_peak
-        kw_cost_savings = annual_kw_savings * self.cost_kw
+        kw_cost_savings = annual_kw_savings * self.cost_kwh
 
         total_savings = peak_cost_savings + kw_cost_savings
 
@@ -83,22 +80,10 @@ class VSDreplace:
 
         return results
 
-    def set_costs(
-        self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory
-    ):
-        self.cost_peak = per_kw_peak_cost
-        self.cost_kw = per_kwh_cost
-        self.cost_therm = per_therm_cost
-        self.cost_mmbtu = per_mmbtu_cost
-        self.uptime = uptime_factory
-
-    def asDataFrame(self, results):
-        df = pd.DataFrame([results])
-        return df
     
-    def process(sheet, dictionaries, costs):
+    def process(sheet, dict, costs):
         vsd_df = sheet.set_index(sheet.columns[0])
-        vsd_replacement = VSDreplace(vsd_df, dictionaries['VSD'])
+        vsd_replacement = VSDreplace(vsd_df, dict)
         vsd_replacement.read_values()
         vsd_replacement.set_costs(*costs)
         vsd_results = vsd_replacement.VSDcalc()

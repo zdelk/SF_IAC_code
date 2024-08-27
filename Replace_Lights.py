@@ -1,7 +1,7 @@
 # 7/26/24 works as expected
 # Replace Lights
 import pandas as pd
-
+from KSU_IAC_Functions import SFIACGeneral
 # # How to use in main
 #     led_replacement = LEDReplacement(75, 40, 1700, 6420)
 #     led_replacement.set_costs(0.054, 13)
@@ -10,13 +10,10 @@ import pandas as pd
 #     print(led_final)
     
 
-class LEDReplacement:
+class LEDReplacement(SFIACGeneral):
     def __init__(self, dict):
         self.set_const(dict)
-    
-    def set_const(self, dict):
-        for key, value in dict.items():
-            setattr(self, key, value)
+
 
     def LED_savings(self):
         peak_reduction = self.num_of_bulbs * (self.current_watts - self.led_watts) / 1000
@@ -67,33 +64,19 @@ class LEDReplacement:
 
         return results
 
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
-        self.cost_peak = per_kw_peak_cost
-        self.cost_kwh = per_kwh_cost
-        self.cost_therm = per_therm_cost
-        self.cost_mmbtu = per_mmbtu_cost
-        self.uptime = uptime_factory
-    
-    def asDataFrame(self, results):
-        df = pd.DataFrame([results])
 
-        return df
-
-    def process(dictionaries, costs):
-        led_replacement = LEDReplacement(dictionaries["LED"])
+    def process(dict, costs):
+        led_replacement = LEDReplacement(dict)
         led_replacement.set_costs(*costs) 
         led_results = led_replacement.LED_savings()
         led_final = led_replacement.asDataFrame(led_results)
         
         return led_final
 
-class OccupancySensor:
+class OccupancySensor(SFIACGeneral):
     def __init__(self, dict):
         self.set_const(dict)
     
-    def set_const(self, dict):
-        for key, value in dict.items():
-            setattr(self, key, value)
             
     def occ_savings(self):
         total_bulb_count = self.bulb_per_fix * self.fix_count
@@ -120,21 +103,9 @@ class OccupancySensor:
         
         return results
 
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
-        self.cost_peak = per_kw_peak_cost
-        self.cost_kwh = per_kwh_cost
-        self.cost_therm = per_therm_cost
-        self.cost_mmbtu = per_mmbtu_cost
-        self.uptime = uptime_factory
-    
 
-    def asDataFrame(self, results):
-        df = pd.DataFrame([results])
-
-        return df
-
-    def process(dictionaries, costs):
-        occupancy_sensor = OccupancySensor(dictionaries["Occupancy"])
+    def process(dict, costs):
+        occupancy_sensor = OccupancySensor(dict)
         occupancy_sensor.set_costs(*costs)
         os_results = occupancy_sensor.occ_savings()
         os_final = occupancy_sensor.asDataFrame(os_results)
@@ -142,13 +113,9 @@ class OccupancySensor:
         return os_final
     
 
-class DaylightSensor:
+class DaylightSensor(SFIACGeneral):
     def __init__(self,dict):
         self.set_const(dict)
-    
-    def set_const(self, dict):
-        for key, value in dict.items():
-            setattr(self, key, value)
     
     def daylight_savings(self):
         total_bulb_count = self.bulb_per_fix * self.fix_count
@@ -176,20 +143,8 @@ class DaylightSensor:
         return results
     
 
-    def set_costs(self, per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory):
-        self.cost_peak = per_kw_peak_cost
-        self.cost_kwh = per_kwh_cost
-        self.cost_therm = per_therm_cost
-        self.cost_mmbtu = per_mmbtu_cost
-        self.uptime = uptime_factory
-    
-    def asDataFrame(self, results):
-        df = pd.DataFrame([results])
-
-        return df
-
-    def process(dictionaries, costs):
-        daylight_sensor = DaylightSensor(dictionaries["Daylight"])
+    def process(dict, costs):
+        daylight_sensor = DaylightSensor(dict)
         daylight_sensor.set_costs(*costs)
         daylight_results = daylight_sensor.daylight_savings()
         daylight_final = daylight_sensor.asDataFrame(daylight_results)
