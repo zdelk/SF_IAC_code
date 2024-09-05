@@ -13,7 +13,7 @@ from KSU_IAC_Functions import *
 # Input and Output Paths
 input_path = "../Data/WS_input.xlsx"
 input_text = "../Data/KS2434_WS.txt"
-output_path = "../Data/WS_out_v1.xlsx" # Set to not overwrite
+output_path = "../Data/WS_out_v3.xlsx" # Set to not overwrite
 
 # Main Function
 
@@ -93,7 +93,7 @@ def main(input_path, input_text, output_path):
             output = cls.process(dictionaries[name], costs)
         
         
-        print_dict[class_name] = output
+        print_dict[name] = output
  
     #--------------------------------------------------------------------------#
     # Writing Section
