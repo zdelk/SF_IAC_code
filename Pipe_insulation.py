@@ -33,7 +33,6 @@ class PipeInsulation(SFIACGeneral):
 
     def insulation_calculator(self):
         pipe_data = self.pipe_data.copy()
-        #k_values = self.k_values.copy()
         k_val_path = "../Data/K_values.csv"
         k_values = pd.read_csv(k_val_path)
             
@@ -153,55 +152,12 @@ class PipeInsulation(SFIACGeneral):
         return output
 
     # -----------------------------------------------------------------------------------------------------#
-    # ---------------------------------Pipe Implementation Cost and SPP------------------------------------#
-    # -----------------------------------------------------------------------------------------------------#
-    # Calculated relevant implementation costs and SPP
-    def pipe_cost_n_ssp(self, savings_data):
-        pipe_data = self.pipe_data.copy()
-        count_RIS = 0  # Initialize number of Special Fittings
-        total_feet = 0  # Initialize total length of pipe (ft)
-        annual_savings = savings_data["Annual_Cost_Savings"][
-            0
-        ]  # Pulling Annual Cost Savings from table
-
-        for i in range(len(pipe_data)):  # Counts number of special fitting
-            if pipe_data.loc[i, "Length_ft"] == "RIS":
-                count_RIS += pipe_data.loc[i, "Amount_of_Fittings"]
-            else:  # Also calculates total length of pipe to be insulated
-                total_feet += float(pipe_data.loc[i, "Length_ft"])
-
-        # Self-explanatory variables
-        labor_hours = total_feet * self.pipe_manhour_conversion
-        labor_cost = labor_hours * self.pipe_manhour_rate
-        insulation_cost = total_feet * self.pipe_mat_cost
-        special_cover_cost = count_RIS * self.pipe_sf_cost
-        implementation_cost = labor_cost + insulation_cost + special_cover_cost
-        spp_years = implementation_cost / annual_savings
-        spp_months = round(spp_years * 12, 1)
-
-        output_table = pd.DataFrame(
-            {  # Data frame for all data from function
-                "Total Feet": [round(total_feet, 2)],
-                "# of Special Fittings": [count_RIS],
-                "Total Labour Hours": [labor_hours],
-                "Labor Cost": [labor_cost],
-                "Insulation Cost": [insulation_cost],
-                "Special Covers Cost": [special_cover_cost],
-                "Implementation Cost": [implementation_cost],
-                "SSP (years)": [spp_years],
-                "SPP (months)": [spp_months],
-            }
-        )
-
-        return output_table
-
-    # -----------------------------------------------------------------------------------------------------#
     # ---------------------------------Final Function to Call in Processor---------------------------------#
     # -----------------------------------------------------------------------------------------------------#
     def pipe_final(self):
         # Running initial Calculator function
         pipe_data = self.pipe_data.copy()
-        pipe_calculations = round(self.insulation_calculator(), 2)  # Running Data through pipe calculator from KSU_IAC_functions
+        pipe_calculations = self.insulation_calculator()  # Running Data through pipe calculator from KSU_IAC_functions
 
         # Creating list of columns for the output table
         pipe_table_cols = [
@@ -244,7 +200,51 @@ class PipeInsulation(SFIACGeneral):
         # Cost Analysis
         pipe_cost_data = round(self.pipe_cost_n_ssp(pipe_savings_data), 2)
 
-        return pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data
+        return pipe_cost_data, pipe_calculations, pipe_heat_savings, pipe_savings_data
+    # -----------------------------------------------------------------------------------------------------#
+    # ---------------------------------Pipe Implementation Cost and SPP------------------------------------#
+    # -----------------------------------------------------------------------------------------------------#
+    # Calculated relevant implementation costs and SPP
+    def pipe_cost_n_ssp(self, savings_data):
+        pipe_data = self.pipe_data.copy()
+        count_RIS = 0  # Initialize number of Special Fittings
+        total_feet = 0  # Initialize total length of pipe (ft)
+        annual_savings = savings_data["Annual_Cost_Savings"][
+            0
+        ]  # Pulling Annual Cost Savings from table
+
+        for i in range(len(pipe_data)):  # Counts number of special fitting
+            if pipe_data.loc[i, "Length_ft"] == "RIS":
+                count_RIS += pipe_data.loc[i, "Amount_of_Fittings"]
+            else:  # Also calculates total length of pipe to be insulated
+                total_feet += float(pipe_data.loc[i, "Length_ft"])
+
+        # Self-explanatory variables
+        labor_hours = total_feet * self.pipe_manhour_conversion
+        labor_cost = labor_hours * self.pipe_manhour_rate
+        insulation_cost = total_feet * self.pipe_mat_cost
+        special_cover_cost = count_RIS * self.pipe_sf_cost
+        implementation_cost = labor_cost + insulation_cost + special_cover_cost
+        spp_years = implementation_cost / annual_savings
+        spp_months = round(spp_years * 12, 1)
+
+        output_table = pd.DataFrame(
+            {  # Data frame for all data from function
+                "Total Feet": [round(total_feet, 2)],
+                "# of Special Fittings": [count_RIS],
+                "Total Labour Hours": [labor_hours],
+                "Labor Cost": [labor_cost],
+                "Insulation Cost": [insulation_cost],
+                "Special Covers Cost": [special_cover_cost],
+                "Implementation Cost": [implementation_cost],
+                "SSP (years)": [spp_years],
+                "SPP (months)": [spp_months],
+            }
+        )
+
+        return output_table
+
+
 
     
     def process(self, dict, costs):
@@ -254,6 +254,12 @@ class PipeInsulation(SFIACGeneral):
         pipe_full = pd.concat([pipe_cost_data, pipe_table_data, pipe_heat_savings, pipe_savings_data], axis=1)
         
         return pipe_full
+
+
+
+
+
+
 
 class OvenDoorInsulation(SFIACGeneral):
     
