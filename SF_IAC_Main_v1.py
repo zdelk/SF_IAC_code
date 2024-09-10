@@ -13,7 +13,7 @@ from KSU_IAC_Functions import *
 # Input and Output Paths
 input_path = "../Data/WS_input.xlsx"
 input_text = "../Data/KS2434_WS.txt"
-output_path = "../Data/WS_out_v3.xlsx" # Set to not overwrite
+output_path = "../Data/WS_out_v4.xlsx" # Set to not overwrite
 
 # Main Function
 
@@ -28,11 +28,17 @@ def main(input_path, input_text, output_path):
     t_A = dictionaries['FC']['t_A']
     # Bill Analysis
     # !!!!!Always first!!!!!
-    ub_sheet = input_workbook["Utility Bills"]
-    utillity_bill = UtilityBill(ub_sheet)
-    per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, combined_bill_data = utillity_bill.process()
-    
-    print_dict['Utility Bills'] = combined_bill_data
+    if 'Utility Bills' in input_workbook.keys():
+        ub_sheet = input_workbook["Utility Bills"]
+        utillity_bill = UtilityBill(ub_sheet)
+        per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, combined_bill_data = utillity_bill.process()
+        
+        print_dict['Utility Bills'] = combined_bill_data
+    else:
+        per_kwh_cost = dictionaries['Utility']['per_kwh_cost']
+        per_kw_peak_cost = dictionaries['Utility']['per_kw_peak_cost']
+        per_therm_cost = dictionaries['Utility']['per_mmbtu_cost']
+        per_mmbtu_cost =dictionaries['Utility']['per_mmbtu_cost']
     
     costs = (per_kwh_cost, per_kw_peak_cost, per_therm_cost, per_mmbtu_cost, uptime_factory, t_A)
     
