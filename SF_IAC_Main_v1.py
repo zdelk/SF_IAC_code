@@ -11,9 +11,10 @@ from KSU_IAC_Functions import *
 
 # --------------------------------------------------------------------------#
 # Input and Output Paths
-input_path = "../Data/WS_input.xlsx"
-input_text = "../Data/KS2434_WS.txt"
-output_path = "../Data/WS_out_v4.xlsx" # Set to not overwrite
+
+input_path = input('File Path for Excel Workbook: ')
+input_text = input('File Path for Input Text File: ')
+output_path = input('File Path for Output Excel Workbook: ')
 
 # Main Function
 
