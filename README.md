@@ -15,13 +15,13 @@ Overview:
  - openpyxl
 
 ## Execution
- - Clone repo
- - Edit provided templates
- - Run SF_IAC_Main.py
- - Input workbook path
- - Input txt file path
- - Input Output path
- - Pray
+ 1. Clone repo
+ 2. Edit provided templates
+ 3. Run SF_IAC_Main.py
+ 4. Input workbook path
+ 5. Input txt file path
+ 6. Input Output path
+ 7. Pray
 
 
 
