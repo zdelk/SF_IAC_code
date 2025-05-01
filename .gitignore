@@ -4,3 +4,7 @@ templates/test_temp.html
 report.docx
 Report_Gen_test.py
 __pycache__/
+Archive_Code/
+venv/
+venv/
+.vscode/
