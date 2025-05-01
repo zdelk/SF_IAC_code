@@ -1,0 +1,352 @@
+##########################
+# CONFIG FILE FOR SF-KSU-IAC
+# Location: Base Template
+# Date: 8/23/24
+# Author: Zachary Delk
+##########################
+#
+# Comments are denoted by "#"
+# Dictionaries are denoted by "!"
+#	- Each report section has its own dictionary
+# Convention for Variables and Values should be as follows
+# Variable = Values # space should be before and after '='
+#
+######################
+#
+# 1. BASIC FACILITY INFORMATION
+#
+######################
+# General Information
+!FC
+#Annual Uptime of Factory
+uptime_factory = 6240
+
+#Ambient Temperature
+t_A = 70
+#----------------------#
+#----------------------#
+# Utility Bill
+# Used if Utility bill sheet isn't included
+!Utility
+per_kwh_cost = 0.08
+per_kw_peak_cost = 15.44
+per_therm_cost = 0
+per_mmbtu_cost = 5.2
+######################
+#
+# 2. INSULATION
+#
+######################
+#-----
+# Change to have general Dicts for each section
+# Subsection Dicts build on them
+!Insul
+boiler_efficiency = 0.8
+type = Electric
+
+########
+### 2.1: Insulate Bare Pipes ###
+# Related ARC Code(s): (ARC 2.2122), (ARC 2.2136), (ARC 2.2515)
+!Pipe
+#--- Input Variables ---#
+boiler_efficiency = 0.8
+
+# Boiler type - Gas or Electric
+type = Electric
+#--- Constants ---#
+r_Air = 0.3
+k_insulation = 0.32
+d_thickness = 2
+length_ris = 1.5
+pipe_manhour_conversion = 0.12
+pipe_manhour_rate = 91.63
+pipe_mat_cost = 9.53
+pipe_sf_cost = 133
+#----------------------#
+#----------------------#
+### 2.2: Insulate Oven Doors ###
+# Related ARC Code(s): (ARC 2.1135)
+!Door
+#--- Input Variables ---#
+boiler_efficiency = 0.8
+type = Electric
+#--- Constants ---#
+K_insul = 0.32
+R_surface = 0.5
+thick_insul = 2
+insul_cost = 10
+labor_factor = 0.3
+#----------------------#
+#----------------------#
+#### 2.3: Insulate Tank ####
+# Related ARC Code(s): (ARC 2.2123)
+!Tank
+#--- Input Variables ---#
+tank_count = 1
+tank_length = 10
+tank_diameter = 4
+boiler_efficiency = 0.8
+esf = 290.2
+type = Electric
+#--- Constants ---#
+insul_cost = 12
+labor_cost = 30
+workers = 2
+man_hours = 4
+#----------------------#
+#----------------------#
+######################
+#
+# 3. PRESSURIZED AIR
+#
+######################
+#  3.1 - Eliminate Leaks in Compressed Air Lines
+# Related ARC Code(s): (ARC 2.4236)
+!AirLeak
+#--- Input Variables ---#
+E_comp = 0.9
+C_dis = 0.61
+T_line = 90
+P_line = 933
+diameter_leak = 0.00135
+num_leaks = 20
+air_fix_time = 8
+air_staff_needed = 2
+
+#--- Constants ---#
+n = 1.4
+K = 1.4
+P_atm = 101
+R = 0.287
+cost_ultrasonic = 5000
+labor_rate = 30
+#----------------------#
+### 3.2 - Reduce Air Pressure ###
+# Related ARC Code(s): (ARC 2.4231)
+!ReduceAir
+#--- Input Variables ---#
+psi_current = 124
+psi_reduce = 4
+hp_comp = 125
+count_comp = 2
+load_percent = 0.6
+#--- Constants ---#
+psi_input = 14.65
+n = 1.4
+hp_to_kw = 0.7457
+cost_labor = 30
+hours_labor = 2
+#----------------------#
+### 3.3 - Turn Off Compressor ###
+# Related ARC Code(s): (ARC 2.6212) 
+!OffComp
+#--- Input Varaibles ---#
+hp_comp = 15
+unload_comp = 0.27
+off_completely = True
+off_hours_per_week = 86
+#--- Constants ---#
+hp_to_kw = 0.7457
+#----------------------#
+####################
+#
+# 4. LIGHTING
+#
+######################
+###  4.1 - Utilize Higher Efficiency Lamps ###
+# Related ARC Code(s): (ARC 2.7142)
+!LED
+
+current_watts = 75
+led_watts = 40
+num_of_bulbs = 1700
+led_hours = 50000
+fluor_hours = 24000
+ballast_hours = 40000
+fluor_cost = 9.24
+ballast_cost = 11.96
+labor_cost = 6.67
+led_fix_cost = 142
+led_bulb_cost = 13.9
+
+######################
+### 4.2 - Utilize Occupancy Sensors for Efficient Fixtures ###
+# Related ARC Code(s): (ARC 2.7135)
+!Occupancy
+#--- Input Variables ---#
+savings_var = 0.5
+bulb_per_fix = 2
+fix_count = 10
+bulb_watt = 40
+#--- Constants ---#
+sensor_cost = 99
+labor_cost = 60
+
+######################
+### 4.3 - Use Daylight Sensors and Photocell Controls ###
+# Related ARC Code(s): (ARC 2.7134)
+!Daylight
+
+savings_var = 0.28
+bulb_per_fix = 2
+fix_count = 15
+bulb_watt = 40
+sensor_cost = 50
+labor_cost = 60
+
+######################
+#
+######################
+### X.X - Replace Compressor with VSD Compressor ###
+# Related ARC Code(s): (ARC 2.4226)
+!VSD
+
+const = 0.7456
+vsd_cost = 45000
+labor_cost = 22500
+
+######################
+#
+# 4. BOILER
+#
+######################
+### 4.1 - Adjust Air/Fuel Ratio of Boiler ###
+# Related ARC Code(s): (ARC 2.1233)
+!Ratio
+#--- Input Variables ---#
+# Boiler fuel consumption (mmbtu/hr)
+fuel_cons_hr = 25.106
+# Percentage of Boiler Capacity
+boiler_percent = 1
+# Percentage of time in fire mode
+fire_percent = 0.7
+eff_current = 80.96
+eff_improve = 82.08
+uptime_weeks = 50
+hrs_week = 2
+labor_cost = 30
+#--- Constants ---#
+implement_cost = 0
+
+#----------------------#
+### 4.2 - Use Economizers to Preheat Boiler Feed Water ##
+# Related ARC Code(s): (ARC 2.2414)
+!Preheat
+#--- Input Variables ---#
+# Steam Production Rate (lb/hr)
+steam_out = 18700
+fire_percent = 0.5
+# % of return condensate
+per_conden = 0.6
+boiler_press = 120
+#--- Constants ---#
+
+#----------------------#
+
+# Install Microturbine to Cogenerate Heat and Power (CHP)
+# (ARC 2.3417)
+!Micro
+
+mt_count = 4
+mt_power = 50
+energy_eff = 0.35
+heat_eff = 0.594
+boiler_efficiency = 0.8
+maint_cost = 1600
+mt_cost = 82500
+mt_labor = 60000
+#----------------------#
+#----------------------#
+### X.X - Repair and Eliminate Steam Leaks ###
+# Related ARC Code(s): (ARC 2.2135)
+!SteamLeak
+#--- Input Variables ---#
+# Pressure Reading from Gauge
+psi_gauge = 110
+# Boiler Input (MMbtu/hr)
+boiler_input = 8.37
+# Steam Output (lbs/hr)
+steam_out = 8625
+
+#--- Constants ---#
+steam_const = 0.695
+valve_cost = 318
+labor_cost = 91.63
+man_hours = 1.56
+psi_to_abs = 14.2
+abs_to_bar = 0.0689
+#----------------------#
+#----------------------#
+### X.X - Utilize Energy-Efficient Belts for Motors ###
+# Related ARC Code(s): (ARC 2.4111) 
+!Belts
+#--- Input Variables ---#
+num_motors = 42
+hp_motors = 10
+draw_motors = 0.746
+eff_belt = 0.015
+load_motors = 0.8
+belt_per_motor = 2
+#--- Constants ---#
+belt_cost = 14.64
+labor_cost = 30
+labor_time = 21
+#----------------------#
+#----------------------#
+### X.X - Isolate Hot or Cold Equipment ###
+# Related ARC Code(s): (ARC 2.2522)
+!Isolate
+#--- Input Variables ---#
+load_percent = 0.5
+cooling_months = 6
+eer_hvac = 9
+count_comp = 2
+hp_comp = 15
+#--- Constants ---#
+conv_factor = 2545
+conv_bhp = 0.98
+heat_percent = 0.8
+unload_draw = 0.25
+cost_takeoff = 125
+cost_odsensor = 273
+cost_duct = 11.843
+ft_duct = 100
+#----------------------#
+#----------------------#
+### X.X - Maintain Air Filters ###
+# Related ARC Code(s): (ARC 2.6127)
+!AirFilter
+#--- Input Variables ---#
+count_units = 12
+avg_hp = 7.5
+months_per_year = 6
+load_reduce = 0.15
+filter_per_unit = 12
+man_hours = 5
+#--- Constants ---#
+cost_filter = 6.80
+cost_labor = 30
+hp_to_kw = 0.7456
+#----------------------#
+#----------------------#
+### X.X - Replace Electric Motors with NEMA Premium Efficiency Motors ###
+# Related ARC Code(s): (ARC 2.4133) 
+# SheetName: Nema Motors
+!NEMA
+#--- Input Variables ---#
+percent_uptime = 0.9
+load_percent = 0.75
+#--- Constants ---#
+hp_to_kw = 0.746
+rewind_reduce = 1.5
+labor_cost = 30
+#----------------------#
+#----------------------#
+### X.X - Replace Existing HVAC Unit with High Efficiency Model ###
+# Related ARC Code(s): (ARC 2.7232)
+!HVAC
+#--- Input Variables ---#
+cooling_months = 6
+#--- Constants ---#
+ton_to_btu = 12000
+inflation_rate = 1.57
