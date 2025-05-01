@@ -7,6 +7,23 @@ Overview:
  - Ran on Python 3.11
  - (SN) Denotes that a sheet is needed in the workbook for execution
 
+## Libraries Req.
+ - pandas
+ - numpy
+ - importlib
+ - xlsxwriter
+ - openpyxl
+
+## Execution
+ - Clone repo
+ - Edit provided templates
+ - Run SF_IAC_Main.py
+ - Input workbook path
+ - Input txt file path
+ - Input Output path
+ - Pray
+
+
 
 ### SF_IAC_Main
 Main script that reads in the text file and workbook and outputs analysis workbook
@@ -52,3 +69,11 @@ Main script that reads in the text file and workbook and outputs analysis workbo
 **Includes:**  
  - VSDreplace : (SN) Savings from replacing current compressor with VSD model
 
+
+## Could add
+- Have it just work in file instead of providing filepaths
+- Create a data workbook for steady constants
+  - mathimatical constants
+  - prices
+  - labor hour conversions
+- Can clean up alot of the code

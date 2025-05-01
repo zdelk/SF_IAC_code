@@ -33,7 +33,7 @@ class PipeInsulation(SFIACGeneral):
 
     def insulation_calculator(self):
         pipe_data = self.pipe_data.copy()
-        k_val_path = "../Data/K_values.csv"
+        k_val_path = "Data/K_values.csv"
         k_values = pd.read_csv(k_val_path)
             
         for i in range(len(pipe_data)):
@@ -269,7 +269,7 @@ class OvenDoorInsulation(SFIACGeneral):
 
             
     def calculator(self):
-        k_val_path = "../Data/K_values.csv"
+        k_val_path = "Data/K_values.csv"
         k_values = pd.read_csv(k_val_path)
         door_data = self.door_data.copy()
         
@@ -395,7 +395,7 @@ class OvenDoorInsulation(SFIACGeneral):
         
         return door_full
     
-class TankInsulation(Insulation):
+class TankInsulation(SFIACGeneral):
     def __init__(self, tank_dict):
         self.set_const(tank_dict)
         
@@ -456,8 +456,8 @@ class TankInsulation(Insulation):
         return savings_table, cost_table
     
 
-    def process(dictionaries, costs):
-        tank_insulation = TankInsulation(dictionaries['Tank'])
+    def process(dict, costs):
+        tank_insulation = TankInsulation(dict)
         tank_insulation.set_costs(*costs)
         savings_table, cost_table = tank_insulation.calculator()
         tank_full = pd.concat([savings_table, cost_table], axis=1)

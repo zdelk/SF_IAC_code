@@ -68,7 +68,13 @@ def main(input_path, input_text, output_path):
     
     sheet_list = list(input_workbook.keys())
     print(sheet_list)
-    
+    # print("Section Names")
+    # print(section_names)
+    # print("\n Dict: \n")
+    # print(dictionaries)
+    # print("\n Tank test \n")
+    # print(dictionaries['Tank'])
+     
     for name in section_names:
         sheet_name = next((title for title in sheet_list if re.search(name + r".*", title)), None)
         
